@@ -1,0 +1,83 @@
+{
+  "root": true,
+  "extends": [
+      "@react-native-community",
+      "eslint-config-prettier",
+      "airbnb",
+      "plugin:import/javascript"
+  ],
+  "parser": "babel-eslint",
+  "parserOptions": {
+      "sourceType": "module"
+  },
+  "rules": {
+      "class-methods-use-this": "off",
+      "no-underscore-dangle": "off",
+      "prettier/prettier": 0,
+      "arrow-body-style": ["error", "as-needed"],
+      "no-unused-vars": [
+          "error",
+          {
+              "args": "after-used"
+          }
+      ],
+      "no-console": [
+          "error",
+          {
+              "allow": ["warn"]
+          }
+      ],
+      "max-lines": ["error", 250],
+      "max-len": [2, 120, 2],
+      "operator-linebreak": ["error", "after"],
+      "implicit-arrow-linebreak": ["off"],
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn",
+      "import/no-extraneous-dependencies": 0,
+      "import/extensions": 0,
+      "arrow-parens": [
+          "error",
+          "as-needed"
+      ],
+      "react/jsx-wrap-multilines": [
+          "error",
+          {
+              "prop": "ignore"
+          }
+      ],
+      "react/jsx-curly-newline": 0,
+      "react/jsx-one-expression-per-line": 0,
+      "react/jsx-filename-extension": 0,
+      "react/jsx-props-no-spreading": 0,
+      "func-names": [
+          "error",
+          "always",
+          {
+              "generators": "never"
+          }
+      ],
+      "generator-star-spacing": ["error", "neither"],
+      "object-curly-newline": [
+          "error",
+          {
+              "consistent": true
+          }
+      ],
+      "import/order": [
+          "error",
+          {
+              "pathGroups": [
+                  {
+                      "pattern": "~/**",
+                      "group": "internal"
+                  }
+              ]
+          }
+      ]
+  },
+  "settings": {
+      "import/resolver": {
+          "babel-module": {}
+      }
+  }
+}
