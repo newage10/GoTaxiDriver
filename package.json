@@ -7,7 +7,11 @@
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "start": "react-native start",
-    "test": "jest"
+    "test": "jest",
+    "android_clean": "cd android && ./gradlew clean && cd ..",
+    "build_android_bundle": "cd android && ./gradlew app:bundleRelease && cd ..",
+    "build_android_debug": "react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res && cd android && ./gradlew app:assembleDebug && cd ..  && adb install -r ./android/app/build/outputs/apk/debug/app-debug.apk",
+    "build_android_apk": "cd android && ./gradlew app:assembleRelease && cd .. && adb install -r ./android/app/build/outputs/apk/release/app-release.apk"
   },
   "dependencies": {
     "@babel/plugin-proposal-do-expressions": "^7.22.5",

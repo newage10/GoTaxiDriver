@@ -107,8 +107,8 @@ const OrderScreen = () => {
           <View style={styles.viewItemLeft}>
             <FastImage source={item?.goType === 1 ? images.icMotorcycle : item?.goType === 2 ? images.icCar : images.icCarXL} style={styles.icItem} resizeMode="contain" />
             <View style={styles.viewItemContent}>
-              <Text style={styles.txtTitle} numberOfLines={2} ellipsizeMode="tail">{`Từ: ${item?.from}`}</Text>
-              <Text style={styles.txtDesc} numberOfLines={2} ellipsizeMode="tail">{`Đến: ${item?.to}`}</Text>
+              <Text style={[styles.txtTitle, pointSelect?.id === item?.id ? styles.txtTitleEnable : null]} numberOfLines={2} ellipsizeMode="tail">{`Từ: ${item?.from}`}</Text>
+              <Text style={[styles.txtDesc, pointSelect?.id === item?.id ? styles.txtTitleEnable : null]} numberOfLines={2} ellipsizeMode="tail">{`Đến: ${item?.to}`}</Text>
             </View>
           </View>
           <View style={styles.viewItemRight}>
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: responsiveSizeOS(16),
   },
   btnSelectLocationEnable: {
-    backgroundColor: 'rgb(138,43,226)',
+    backgroundColor: Colors.txtGreen,
   },
   txtSelectService: {
     fontSize: responsiveFontSizeOS(16),
@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
   },
   viewInputButton: {
     bottom: 0,
-    backgroundColor: '#610899',
+    backgroundColor: Colors.btnSubmit,
     borderRadius: responsiveSizeOS(15),
     justifyContent: 'center',
     alignItems: 'center',
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
     marginTop: responsiveSizeOS(10),
   },
   viewInputButton_Disabled: {
-    backgroundColor: '#7A0BC0',
+    backgroundColor: Colors.bgGray,
   },
   txtSubmit: {
     fontSize: responsiveFontSizeOS(16),
@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: responsiveSizeOS(10),
   },
   viewItemEnable: {
-    backgroundColor: '#d0aaf3',
+    backgroundColor: Colors.txtGreen,
   },
   viewItemLeft: {
     flexDirection: 'row',
@@ -256,6 +256,9 @@ const styles = StyleSheet.create({
   txtTitle: {
     fontSize: responsiveFontSizeOS(16),
     color: 'black',
+  },
+  txtTitleEnable: {
+    color: Colors.txtWhite,
   },
   txtTitleRight: {
     fontSize: responsiveFontSizeOS(16),

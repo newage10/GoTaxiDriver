@@ -297,7 +297,7 @@ const styles = StyleSheet.create({
   viewRightHeader: {
     justifyContent: 'center',
     alignItems: 'center',
-    width: '25%',
+    width: '15%',
     height: responsiveSizeOS(35),
   },
   btnAcc: {

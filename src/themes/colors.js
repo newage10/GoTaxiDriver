@@ -9,6 +9,7 @@ const Colors = {
   txtGreen: '#0E9347',
   txtGray: 'rgb(211,211,211)',
   bgGrayT: 'rgba(211,211,211,0.9)',
+  bgGray: 'rgb(136,140,124)',
 };
 
 export default Colors;

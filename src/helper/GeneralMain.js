@@ -4,7 +4,7 @@ import numeral from 'numeral';
 
 export const screenWidth = Dimensions.get('window').width;
 
-export const defaultGateGradient = ['#0052D4', '#6FB1FC'];
+export const defaultGateGradient = ['#027300', '#009900'];
 
 /**
  * Tiêu chuẩn Google Pixel 3 XL

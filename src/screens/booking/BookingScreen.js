@@ -12,6 +12,7 @@ import { searchType } from '~/constant/content';
 import { SCREEN_WIDTH, isEmptyObj, responsiveSizeOS } from '~/helper/GeneralMain';
 import SCREENS from '~/constant/screens';
 import { Layout } from '~/components/Layout';
+import LayoutView from '~/components/LayoutView';
 
 const BookingScreen = (props) => {
   const { searchLocation } = props?.route?.params ?? {};
@@ -103,7 +104,7 @@ const BookingScreen = (props) => {
 
   return (
     <>
-      <Layout style={{}}>
+      <LayoutView>
         <Header barStyle="dark-content" title={'Chuyến đi'} onPressLeft={preventGoBack} />
         <SafeAreaView style={styles.container}>
           <View style={styles.viewContent}>
@@ -111,7 +112,7 @@ const BookingScreen = (props) => {
           </View>
         </SafeAreaView>
         <DriverReceiverModal modalVisible={bookingVisible} toggleModalVisible={toggleBookingVisible} modalTitle={'Chọn tài xế'} handleBooking={handleBooking} />
-      </Layout>
+      </LayoutView>
     </>
   );
 };
