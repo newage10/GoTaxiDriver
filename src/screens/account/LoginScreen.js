@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
   },
   viewText: {
     width: '100%',
-    height: responsiveSizeOS(16),
+    height: responsiveSizeOS(20),
     justifyContent: 'center',
     alignItems: 'flex-end',
   },
