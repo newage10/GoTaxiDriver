@@ -1,4 +1,4 @@
-import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View, KeyboardAvoidingView, Platform } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
 import React, { useState } from 'react';
 import { Layout } from '~/components/Layout';
 import FastImage from 'react-native-fast-image';
@@ -7,6 +7,9 @@ import { formatAccountNumber, responsiveFontSizeOS, responsiveSizeOS } from '~/h
 import images from '~/themes/images';
 import { NavigationContext } from '@react-navigation/native';
 import SCREENS from '~/constant/screens';
+import { storeToken } from '~/configs/storageUtils';
+import axios from 'axios';
+import { SERVER_URL } from '~/configs/api.config';
 
 const RegisterScreen = () => {
   const navigation = React.useContext(NavigationContext);
@@ -16,6 +19,7 @@ const RegisterScreen = () => {
   const [password, setPassword] = useState(null);
   const [rePassword, setRePassword] = useState(null);
   const [privacyPolicyOption, setPrivacyPolicyOption] = useState(false);
+  const [licensePlate, setLicensePlate] = useState(null);
 
   const handleSetData = (data, key) => {
     switch (key) {
@@ -27,7 +31,7 @@ const RegisterScreen = () => {
         setPhoneNumber(iPhoneNumber);
         break;
       case paramRegister.email:
-        setEmail(email);
+        setEmail(data);
         break;
       case paramRegister.password:
         setPassword(data);
@@ -35,8 +39,36 @@ const RegisterScreen = () => {
       case paramRegister.rePassword:
         setRePassword(data);
         break;
+      case paramRegister.licensePlate:
+        setLicensePlate(data);
+        break;
       default:
         break;
+    }
+  };
+
+  const handleRegister = async () => {
+    try {
+      const response = await axios.post(`${SERVER_URL}/v1/driver/register`, {
+        phoneNo: phoneNumber,
+        password: password,
+        fullname: fullName,
+        email: email,
+        licensePlate: licensePlate,
+      });
+      const token = response.data.token;
+      if (response.status === 200 && token) {
+        // Lưu token vào AsyncStorage
+        await storeToken(token);
+
+        // Chuyển hướng sau khi đăng nhập thành công
+        navigation.navigate(SCREENS.HOME);
+      } else {
+        Alert.alert('Thông báo', 'Đăng ký thất bại. Vui lòng kiểm tra lại.');
+      }
+    } catch (error) {
+      console.log('Error during registration: ', error);
+      Alert.alert('Thông báo', 'Lỗi kết nối mạng hoặc máy chủ.');
     }
   };
 
@@ -51,13 +83,13 @@ const RegisterScreen = () => {
         <Text style={styles.txtTitle}>{'Sign Up'}</Text>
         <View style={styles.viewContent}>
           <View style={styles.viewInput}>
-            <TextInput value={fullName} onChangeText={(e) => handleSetData(e, paramRegister.fullName)} style={styles.viewInputText} placeholder="Họ tên" autoCorrect={false} maxLength={10} allowFontScaling={false} keyboardType="default" />
+            <TextInput value={fullName} onChangeText={(e) => handleSetData(e, paramRegister.fullName)} style={styles.viewInputText} placeholder="Họ tên" autoCorrect={false} maxLength={100} allowFontScaling={false} keyboardType="default" />
           </View>
           <View style={styles.viewInput}>
             <TextInput value={phoneNumber} onChangeText={(e) => handleSetData(e, paramRegister.phoneNumber)} style={styles.viewInputText} placeholder="Số điện thoại" autoCorrect={false} maxLength={10} allowFontScaling={false} keyboardType="number-pad" />
           </View>
           <View style={styles.viewInput}>
-            <TextInput value={email} onChangeText={(e) => handleSetData(e, paramRegister.email)} style={styles.viewInputText} placeholder="Email" autoCorrect={false} maxLength={10} allowFontScaling={false} keyboardType="email-address" />
+            <TextInput value={email} onChangeText={(e) => handleSetData(e, paramRegister.email)} style={styles.viewInputText} placeholder="Email" autoCorrect={false} maxLength={30} allowFontScaling={false} keyboardType="email-address" />
           </View>
           <View style={styles.viewInput}>
             <TextInput value={password} onChangeText={(e) => handleSetData(e, paramRegister.password)} secureTextEntry={true} style={styles.viewInputText} placeholder="Mật khẩu" autoCorrect={false} maxLength={20} allowFontScaling={false} keyboardType="number-pad" />
@@ -65,13 +97,16 @@ const RegisterScreen = () => {
           <View style={styles.viewInput}>
             <TextInput value={rePassword} onChangeText={(e) => handleSetData(e, paramRegister.rePassword)} secureTextEntry={true} style={styles.viewInputText} placeholder="Xác nhận mật khẩu" autoCorrect={false} maxLength={20} allowFontScaling={false} keyboardType="number-pad" />
           </View>
+          <View style={styles.viewInput}>
+            <TextInput value={licensePlate} onChangeText={(e) => handleSetData(e, paramRegister.licensePlate)} style={styles.viewInputText} placeholder="Biển số xe" autoCorrect={false} maxLength={15} allowFontScaling={false} keyboardType="default" />
+          </View>
           <View style={styles.viewSelectOption}>
             <TouchableOpacity style={styles.btnSelectOption} onPress={handleSelectOption}>
               <FastImage source={privacyPolicyOption ? images.icCheckbox : images.icUnCheckbox} style={styles.imgSelectOption} resizeMode="contain" />
             </TouchableOpacity>
             <Text style={styles.txtSelectOption}>{`Bằng việc bạn chọn tạo cửa hàng, bạn đồng ý với Điều khoản sử dụng của App.`}</Text>
           </View>
-          <TouchableOpacity style={styles.btnSubmit}>
+          <TouchableOpacity style={styles.btnSubmit} onPress={handleRegister}>
             <Text style={styles.txtSubmit}>Đăng ký</Text>
           </TouchableOpacity>
           <View style={styles.viewQuestion}>
@@ -94,6 +129,7 @@ const paramRegister = {
   email: 'email',
   password: 'password',
   rePassword: 'rePassword',
+  licensePlate: 'licensePlate',
 };
 
 const styles = StyleSheet.create({
@@ -109,18 +145,18 @@ const styles = StyleSheet.create({
   },
   icLogoApp: {
     width: responsiveSizeOS(260),
-    height: responsiveSizeOS(144),
-    marginTop: responsiveSizeOS(50),
+    height: responsiveSizeOS(100),
+    marginTop: responsiveSizeOS(0),
   },
   txtTitle: {
-    fontSize: responsiveFontSizeOS(32),
+    fontSize: responsiveFontSizeOS(24),
     color: Colors.txtBlack,
     fontWeight: 'bold',
     marginTop: responsiveSizeOS(5),
   },
   viewContent: {
     width: '100%',
-    marginTop: responsiveSizeOS(24),
+    marginTop: responsiveSizeOS(4),
   },
   viewText: {
     width: '100%',
@@ -175,7 +211,7 @@ const styles = StyleSheet.create({
     height: responsiveSizeOS(50),
     width: '100%',
     borderRadius: responsiveSizeOS(20),
-    marginTop: responsiveSizeOS(16),
+    marginTop: responsiveSizeOS(4),
     justifyContent: 'center',
     alignItems: 'center',
   },

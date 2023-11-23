@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, SafeAreaView, TextInput, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView, TextInput, TouchableOpacity, Alert } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import SplashScreen from 'react-native-splash-screen';
 import { Layout } from '~/components/Layout';
@@ -7,7 +7,10 @@ import FastImage from 'react-native-fast-image';
 import images from '~/themes/images';
 import { formatAccountNumber, responsiveFontSizeOS, responsiveSizeOS } from '~/helper/GeneralMain';
 import SCREENS from '~/constant/screens';
+import { SERVER_URL } from '~/configs/api.config';
 import { NavigationContext } from '@react-navigation/native';
+import axios from 'axios';
+import { storeToken } from '~/configs/storageUtils';
 
 const LoginScreen = () => {
   const navigation = React.useContext(NavigationContext);
@@ -17,6 +20,29 @@ const LoginScreen = () => {
   useEffect(() => {
     SplashScreen.hide();
   }, []);
+
+  const handleLogin = async () => {
+    try {
+      const response = await axios.post(`${SERVER_URL}/v1/driver/login`, {
+        phoneNo: phoneNumber,
+        password: password,
+      });
+      console.log('Test 2 response: ', JSON.stringify(response));
+      const token = response.data.token;
+      if (response.status === 200 && token) {
+        // Lưu token vào AsyncStorage
+        await storeToken(token);
+
+        // Chuyển hướng sau khi đăng nhập thành công
+        navigation.navigate(SCREENS.HOME);
+      } else {
+        Alert.alert('Thông báo', 'Đăng nhập thất bại. Vui lòng kiểm tra lại.');
+      }
+    } catch (error) {
+      console.log('Test 2 error: ', error);
+      Alert.alert('Thông báo', 'Đăng nhập thất bại. Vui lòng kiểm tra lại.');
+    }
+  };
 
   const handleSetData = (data, key) => {
     switch (key) {
@@ -50,7 +76,7 @@ const LoginScreen = () => {
             </TouchableOpacity>
           </View>
         </View>
-        <TouchableOpacity style={styles.btnSubmit} onPress={() => navigation.navigate(SCREENS.HOME)}>
+        <TouchableOpacity style={styles.btnSubmit} onPress={handleLogin}>
           <Text style={styles.txtSubmit}>Đăng nhập</Text>
         </TouchableOpacity>
         <View style={styles.viewLoginOption}>
@@ -93,7 +119,7 @@ const styles = StyleSheet.create({
   icLogoApp: {
     width: responsiveSizeOS(260),
     height: responsiveSizeOS(144),
-    marginTop: responsiveSizeOS(100),
+    marginTop: responsiveSizeOS(10),
   },
   txtTitle: {
     fontSize: responsiveFontSizeOS(32),
