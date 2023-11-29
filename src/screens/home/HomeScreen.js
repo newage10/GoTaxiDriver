@@ -119,7 +119,7 @@ const HomeScreen = () => {
             </TouchableOpacity>
           </View>
           <View style={styles.viewCenterHeader}>
-            <TouchableOpacity style={styles.btnSearch} onPress={() => navigation.navigate(SCREENS.ORDER_SCREEN)}>
+            <TouchableOpacity style={styles.btnSearch} onPress={() => navigation.navigate(SCREENS.RECEIVE_BOOK_SCREEN)}>
               <FastImage source={images.icSearch} style={styles.imgSearh} resizeMode="contain" />
               <Text style={styles.txtSearch}>Thông tin các yêu cầu đặt xe</Text>
             </TouchableOpacity>
