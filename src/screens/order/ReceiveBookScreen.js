@@ -1,46 +1,76 @@
 import { FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { NavigationContext, useNavigation } from '@react-navigation/native';
-import FastImage from 'react-native-fast-image';
-import { historyBookData, newBookData } from '~/data';
 import { Footer } from '~/components/Footer';
-import { Layout } from '~/components/Layout';
 import Header from '~/components/Header';
-import images from '~/themes/images';
 import Colors from '~/themes/colors';
 import { SCREEN_WIDTH, isEmptyObj, responsiveFontSizeOS, responsiveSizeOS } from '~/helper/GeneralMain';
 import SCREENS from '~/constant/screens';
-import { searchType } from '~/constant/content';
+import io from 'socket.io-client';
 import LayoutView from '~/components/LayoutView';
 
+const SOCKET_URL = 'http://192.168.1.10:5000';
+
 const ReceiveBookScreen = () => {
-  const [isSubmit, setCheckSubmit] = useState(false);
+  const [isSubmit, setCheckSubmit] = useState(true);
+  const [rideRequest, setRideRequest] = useState(null);
   const navigation = React.useContext(NavigationContext);
-  const [bookType, setBookType] = useState(orderType.NEW);
-  const [pointSelect, setpointSelect] = useState(null);
-  const [newBookList, setNewBookList] = useState(newBookData ?? []);
-  const [historyBookLisk, setHistoryBookList] = useState(historyBookData ?? []);
-  console.log('Test pointSelect: ', JSON.stringify(pointSelect));
+  const socketRef = useRef(null);
 
   useEffect(() => {
-    if (!isEmptyObj(pointSelect)) {
-      pointSelect ? setCheckSubmit(true) : setCheckSubmit(false);
-    }
-  }, [pointSelect]);
+    socketRef.current = io(SOCKET_URL, { transports: ['websocket'] });
 
-  const preventGoBack = () => {
-    navigation.goBack();
-    return true;
+    socketRef.current.on('connect', () => {
+      console.log('Connected to server');
+    });
+
+    socketRef.current.on('rideRequest', (request) => {
+      console.log('Ride request received:', request);
+      setRideRequest(request);
+      // Bạn có thể thêm logic để hiển thị thông tin yêu cầu lên UI ở đây
+    });
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
+    };
+  }, []);
+
+  const acceptRide = () => {
+    if (socketRef.current && rideRequest) {
+      socketRef.current.emit('driver_accepted', { driverId: 'driver123', requestId: rideRequest.requestId });
+      console.log('Ride accepted:', rideRequest.requestId);
+      // Bạn có thể thêm logic sau khi chấp nhận yêu cầu ở đây
+    }
+  };
+
+  const rejectRide = () => {
+    if (socketRef.current && rideRequest) {
+      socketRef.current.emit('driver_rejected', { requestId: rideRequest.requestId });
+      console.log('Ride rejected:', rideRequest.requestId);
+      // Bạn có thể thêm logic sau khi từ chối yêu cầu ở đây
+    }
   };
 
   return (
     <LayoutView>
-      <Header barStyle="dark-content" title={'Thông tin chuyến'} onPressLeft={preventGoBack} />
+      <Header barStyle="dark-content" title={'Thông tin chuyến'} onPressLeft={() => navigation.goBack()} />
       <SafeAreaView style={styles.container}>
-        <View style={styles.viewContent}></View>
+        <View style={styles.viewContent}>{/* Thêm UI để hiển thị thông tin yêu cầu chuyến đi ở đây */}</View>
         <Footer disableShadown backgroundColor="white">
-          <TouchableOpacity style={[[styles.viewInputButton, !isSubmit ? styles.viewInputButton_Disabled : null]]} disabled={isSubmit ? false : true}>
+          <TouchableOpacity
+            style={[styles.viewInputButton, !isSubmit ? styles.viewInputButton_Disabled : null]}
+            disabled={!isSubmit}
+            onPress={acceptRide} // Gọi hàm acceptRide khi nhấn nút
+          >
             <Text style={styles.txtSubmit}>BẮT ĐẦU</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.viewInputButton]} // Bạn cần thêm style cho nút từ chối
+            onPress={rejectRide} // Gọi hàm rejectRide khi nhấn nút
+          >
+            <Text style={styles.txtSubmit}>TỪ CHỐI</Text>
           </TouchableOpacity>
         </Footer>
       </SafeAreaView>
