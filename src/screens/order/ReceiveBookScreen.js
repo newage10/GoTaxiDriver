@@ -53,6 +53,12 @@ const ReceiveBookScreen = () => {
     }
   };
 
+  const updateDriverLocation = (location) => {
+    if (socketRef.current) {
+      socketRef.current.emit('driver_location_update', location);
+    }
+  };
+
   return (
     <LayoutView>
       <Header barStyle="dark-content" title={'Thông tin chuyến'} onPressLeft={() => navigation.goBack()} />

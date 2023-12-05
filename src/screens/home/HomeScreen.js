@@ -15,10 +15,6 @@ import HomeModal from './HomeModal';
 import useToggleState from '~/hooks/useToggleState';
 import Colors from '~/themes/colors';
 
-//Giao diện trang home: phía trên: thanh tìm kiếm, kết hợp nút đi vào quản lý user
-//Modal phía dưới, chứa thông tin lịch sử chuyến đi
-//Khi click vào sẽ tìm kiếm chuyến đi
-
 const HomeScreen = () => {
   const navigation = React.useContext(NavigationContext);
   const [currentPosition, setCurrentPosition] = useState(null);
@@ -96,17 +92,6 @@ const HomeScreen = () => {
       console.log('Test vi tri: ', info);
       setCurrentPosition(info);
     });
-    // Geolocation.getCurrentPosition(
-    //   (position) => {
-    //     console.log('Vi tri: ', position);
-    //     setCurrentPosition(position);
-    //   },
-    //   (error) => {
-    //     // See error code charts below.
-    //     console.log(error.code, error.message);
-    //   },
-    //   { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
-    // );
   };
 
   const viewSearchHeader = () => {
