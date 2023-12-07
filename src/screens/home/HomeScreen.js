@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View, Platform, Alert, Dimensions, TouchableOpacity } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import MapView, { Marker } from 'react-native-maps';
 import Geolocation from '@react-native-community/geolocation';
 import { check, openSettings, PERMISSIONS, request, RESULTS } from 'react-native-permissions';
@@ -14,8 +14,11 @@ import SplashScreen from 'react-native-splash-screen';
 import HomeModal from './HomeModal';
 import useToggleState from '~/hooks/useToggleState';
 import Colors from '~/themes/colors';
+import { useDispatch } from 'react-redux';
+import { getCurrentLocation } from '~/redux/map/actions';
 
 const HomeScreen = () => {
+  const dispatch = useDispatch();
   const navigation = React.useContext(NavigationContext);
   const [currentPosition, setCurrentPosition] = useState(null);
   const [currentLatitude, setCurrentLatitude] = useState(defaultLocation?.latitude);
@@ -87,12 +90,35 @@ const HomeScreen = () => {
       });
   };
 
-  const getCurrentLocation = () => {
-    Geolocation.getCurrentPosition((info) => {
-      console.log('Test vi tri: ', info);
-      setCurrentPosition(info);
+  // const getCurrentLocation = () => {
+  //   Geolocation.getCurrentPosition((info) => {
+  //     console.log('Test vi tri: ', info);
+  //     setCurrentPosition(info);
+  //   });
+  // };
+
+  const getCurrentLocationMap = useCallback(() => {
+    Geolocation.getCurrentPosition(
+      (position) => {
+        setCurrentPosition(position);
+        // Dispatch vị trí hiện tại vào Redux store
+        dispatch(getCurrentLocation(position));
+      },
+      (error) => {
+        console.error(error);
+      },
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+    );
+  }, [dispatch]);
+
+  // Gọi hàm getCurrentLocation mỗi khi màn hình được focus
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      getCurrentLocationMap();
     });
-  };
+
+    return unsubscribe;
+  }, [navigation, getCurrentLocationMap]);
 
   const viewSearchHeader = () => {
     return (
