@@ -112,13 +112,13 @@ const HomeScreen = () => {
   }, [dispatch]);
 
   // Gọi hàm getCurrentLocation mỗi khi màn hình được focus
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
-      getCurrentLocationMap();
-    });
+  // useEffect(() => {
+  //   const unsubscribe = navigation.addListener('focus', () => {
+  //     getCurrentLocationMap();
+  //   });
 
-    return unsubscribe;
-  }, [navigation, getCurrentLocationMap]);
+  //   return unsubscribe;
+  // }, [navigation, getCurrentLocationMap]);
 
   const viewSearchHeader = () => {
     return (

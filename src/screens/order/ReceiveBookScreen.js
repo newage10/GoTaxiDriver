@@ -1,5 +1,5 @@
 import { FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { NavigationContext, useNavigation } from '@react-navigation/native';
 import { Footer } from '~/components/Footer';
 import Header from '~/components/Header';
@@ -8,14 +8,59 @@ import { SCREEN_WIDTH, isEmptyObj, responsiveFontSizeOS, responsiveSizeOS } from
 import SCREENS from '~/constant/screens';
 import io from 'socket.io-client';
 import LayoutView from '~/components/LayoutView';
+import FastImage from 'react-native-fast-image';
+import images from '~/themes/images';
+import useToggleState from '~/hooks/useToggleState';
+import Geolocation from '@react-native-community/geolocation';
+import { useDispatch } from 'react-redux';
+import { getCurrentLocation } from '~/redux/map/actions';
+import { store } from '~/configs/store.config';
 
 const SOCKET_URL = 'http://192.168.1.10:5000';
 
 const ReceiveBookScreen = () => {
+  const dispatch = useDispatch();
   const [isSubmit, setCheckSubmit] = useState(true);
   const [rideRequest, setRideRequest] = useState(null);
+  const [receiveBookVisible, toggleReceiveBookVisible] = useToggleState(false);
+  const [isAvailable, setIsAvailable] = useState(false);
   const navigation = React.useContext(NavigationContext);
   const socketRef = useRef(null);
+
+  const toggleAvailability = () => {
+    const currentState = store.getState();
+    console.log('Test 2 currentState receive: ', JSON.stringify(currentState));
+    const newAvailability = !isAvailable;
+    setIsAvailable(newAvailability); // Cập nhật trạng thái sẵn sàng nhận chuyến
+    toggleReceiveBookVisible(); // Bật/tắt hiển thị modal
+
+    if (newAvailability) {
+      console.log('Test 2 isAvailable: ', newAvailability);
+      // Tài xế bây giờ sẵn sàng nhận chuyến, gửi vị trí hiện tại
+      getCurrentLocationMap();
+    } else {
+      // Nếu tài xế không còn sẵn sàng, gửi thông báo đến server nếu cần
+      // socketRef.current.emit('driver_not_available', { driverId: 'driver123' });
+    }
+  };
+
+  const getCurrentLocationMap = useCallback(() => {
+    console.log('Test 2 isAvailable getCurrentLocationMap: ', isAvailable);
+    // Chỉ lấy vị trí khi tài xế sẵn sàng nhận chuyến
+    Geolocation.getCurrentPosition(
+      (position) => {
+        console.log('Test 2 position receive: ', JSON.stringify(position));
+        // Dispatch vị trí hiện tại vào Redux store
+        dispatch(getCurrentLocation(position));
+        // Gửi vị trí hiện tại đến server thông qua Socket.io
+        // updateDriverLocation(position.coords);
+      },
+      (error) => {
+        console.error(error);
+      },
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+    );
+  }, [dispatch, isAvailable]);
 
   useEffect(() => {
     socketRef.current = io(SOCKET_URL, { transports: ['websocket'] });
@@ -63,7 +108,14 @@ const ReceiveBookScreen = () => {
     <LayoutView>
       <Header barStyle="dark-content" title={'Thông tin chuyến'} onPressLeft={() => navigation.goBack()} />
       <SafeAreaView style={styles.container}>
-        <View style={styles.viewContent}>{/* Thêm UI để hiển thị thông tin yêu cầu chuyến đi ở đây */}</View>
+        <View style={styles.viewContent}>
+          <View style={styles.viewReceiveBook}>
+            <Text style={styles.txtReceiveBook}>Nhận chuyến</Text>
+            <TouchableOpacity style={styles.btnReceiveBook} onPress={toggleAvailability}>
+              <FastImage source={isAvailable ? images.icSwitchOn : images.icSwitchOff} style={styles.imgReceiveBook} resizeMode="contain" />
+            </TouchableOpacity>
+          </View>
+        </View>
         <Footer disableShadown backgroundColor="white">
           <TouchableOpacity
             style={[styles.viewInputButton, !isSubmit ? styles.viewInputButton_Disabled : null]}
@@ -222,5 +274,25 @@ const styles = StyleSheet.create({
   bookList: {
     flex: 1,
     width: '100%',
+  },
+  btnReceiveBook: {
+    width: responsiveSizeOS(100),
+    height: responsiveSizeOS(30),
+    alignItems: 'flex-end',
+  },
+  imgReceiveBook: {
+    width: responsiveSizeOS(50),
+    height: responsiveSizeOS(30),
+  },
+  viewReceiveBook: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: responsiveSizeOS(16),
+    marginHorizontal: responsiveSizeOS(16),
+  },
+  txtReceiveBook: {
+    fontSize: responsiveFontSizeOS(16),
+    color: 'rgb(11, 11, 11)',
   },
 });

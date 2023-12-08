@@ -20,7 +20,7 @@ const HomeModal = (props) => {
   };
 
   const viewItemHistory = (item) => {
-    console.log('Test now item: ', JSON.stringify(item));
+    // console.log('Test now item: ', JSON.stringify(item));
     return (
       <>
         <TouchableOpacity style={[styles.viewItem]} onPress={handleSelect(item)}>

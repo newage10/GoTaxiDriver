@@ -9,7 +9,7 @@ const BackgroundFetchService = () => {
       console.log('Đang cấu hình BackgroundFetch...');
       BackgroundFetch.configure(
         {
-          minimumFetchInterval: 15, // Khoảng thời gian fetch tối thiểu là 15 phút
+          minimumFetchInterval: 1, // Khoảng thời gian fetch tối thiểu là 15 phút
           stopOnTerminate: false,
           startOnBoot: true,
         },
@@ -20,7 +20,10 @@ const BackgroundFetchService = () => {
           const currentState = store.getState();
           const currentPosition = currentState.map.currentLocation; // Đảm bảo đường dẫn này phản ánh cấu trúc của store của bạn
 
+          console.log('Test 2 currentState: ', JSON.stringify(currentState));
           if (currentPosition) {
+            console.log('Test 2 background position:', JSON.stringify(currentPosition));
+
             // Gửi vị trí hiện tại đến server hoặc thực hiện các tác vụ khác
             // TODO: Gọi API hoặc gửi thông tin qua Socket.IO
           }

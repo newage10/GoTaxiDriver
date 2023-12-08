@@ -21,6 +21,8 @@ const images = {
   icCar: require('./images/icCar.png'),
   icCarXL: require('./images/icCarXL.png'),
   icMap: require('./images/icMap.png'),
+  icSwitchOn: require('./images/icSwitchOn.png'),
+  icSwitchOff: require('./images/icSwitchOff.png'),
 };
 
 export default images;
