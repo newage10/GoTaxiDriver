@@ -23,6 +23,8 @@ const images = {
   icMap: require('./images/icMap.png'),
   icSwitchOn: require('./images/icSwitchOn.png'),
   icSwitchOff: require('./images/icSwitchOff.png'),
+  icRadioRed: require('./images/icRadioRed.png'),
+  icRadioEmpty: require('./images/icRadioEmpty.png'),
 };
 
 export default images;

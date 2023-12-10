@@ -5,42 +5,38 @@ import { Footer } from '~/components/Footer';
 import Header from '~/components/Header';
 import Colors from '~/themes/colors';
 import { SCREEN_WIDTH, isEmptyObj, responsiveFontSizeOS, responsiveSizeOS } from '~/helper/GeneralMain';
-import SCREENS from '~/constant/screens';
-import io from 'socket.io-client';
 import LayoutView from '~/components/LayoutView';
 import FastImage from 'react-native-fast-image';
 import images from '~/themes/images';
 import useToggleState from '~/hooks/useToggleState';
 import Geolocation from '@react-native-community/geolocation';
-import { useDispatch } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '~/configs/hooks';
 import { getCurrentLocation } from '~/redux/map/actions';
 import { store } from '~/configs/store.config';
-
-const SOCKET_URL = 'http://192.168.1.10:5000';
+import socketService from '~/services/socketService';
+import { setDriverAvailability } from '~/redux/driver/actions';
 
 const ReceiveBookScreen = () => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [isSubmit, setCheckSubmit] = useState(true);
-  const [rideRequest, setRideRequest] = useState(null);
-  const [receiveBookVisible, toggleReceiveBookVisible] = useToggleState(false);
-  const [isAvailable, setIsAvailable] = useState(false);
+  const isAvailable = useAppSelector((state) => state?.driver?.isAvailable ?? false);
+  const driverId = useAppSelector((state) => state?.driver?.profile?.id ?? 10);
+  console.log('Test 2 isAvailable: ', isAvailable);
+
   const navigation = React.useContext(NavigationContext);
-  const socketRef = useRef(null);
 
   const toggleAvailability = () => {
-    const currentState = store.getState();
-    console.log('Test 2 currentState receive: ', JSON.stringify(currentState));
     const newAvailability = !isAvailable;
-    setIsAvailable(newAvailability); // Cập nhật trạng thái sẵn sàng nhận chuyến
-    toggleReceiveBookVisible(); // Bật/tắt hiển thị modal
-
+    dispatch(setDriverAvailability(newAvailability)); // Cập nhật trạng thái trong Redux store
     if (newAvailability) {
       console.log('Test 2 isAvailable: ', newAvailability);
       // Tài xế bây giờ sẵn sàng nhận chuyến, gửi vị trí hiện tại
       getCurrentLocationMap();
+      socketService.connect(); // Mở kết nối Socket.IO
     } else {
+      console.log('Tài xế không sẵn sàng nhận chuyến');
+      socketService.disconnect(); // Ngắt kết nối Socket.IO
       // Nếu tài xế không còn sẵn sàng, gửi thông báo đến server nếu cần
-      // socketRef.current.emit('driver_not_available', { driverId: 'driver123' });
     }
   };
 
@@ -53,7 +49,10 @@ const ReceiveBookScreen = () => {
         // Dispatch vị trí hiện tại vào Redux store
         dispatch(getCurrentLocation(position));
         // Gửi vị trí hiện tại đến server thông qua Socket.io
-        // updateDriverLocation(position.coords);
+        socketService.updateLocation(driverId, {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
       },
       (error) => {
         console.error(error);
@@ -61,48 +60,6 @@ const ReceiveBookScreen = () => {
       { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
     );
   }, [dispatch, isAvailable]);
-
-  useEffect(() => {
-    socketRef.current = io(SOCKET_URL, { transports: ['websocket'] });
-
-    socketRef.current.on('connect', () => {
-      console.log('Connected to server');
-    });
-
-    socketRef.current.on('rideRequest', (request) => {
-      console.log('Ride request received:', request);
-      setRideRequest(request);
-      // Bạn có thể thêm logic để hiển thị thông tin yêu cầu lên UI ở đây
-    });
-
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-      }
-    };
-  }, []);
-
-  const acceptRide = () => {
-    if (socketRef.current && rideRequest) {
-      socketRef.current.emit('driver_accepted', { driverId: 'driver123', requestId: rideRequest.requestId });
-      console.log('Ride accepted:', rideRequest.requestId);
-      // Bạn có thể thêm logic sau khi chấp nhận yêu cầu ở đây
-    }
-  };
-
-  const rejectRide = () => {
-    if (socketRef.current && rideRequest) {
-      socketRef.current.emit('driver_rejected', { requestId: rideRequest.requestId });
-      console.log('Ride rejected:', rideRequest.requestId);
-      // Bạn có thể thêm logic sau khi từ chối yêu cầu ở đây
-    }
-  };
-
-  const updateDriverLocation = (location) => {
-    if (socketRef.current) {
-      socketRef.current.emit('driver_location_update', location);
-    }
-  };
 
   return (
     <LayoutView>
@@ -117,18 +74,8 @@ const ReceiveBookScreen = () => {
           </View>
         </View>
         <Footer disableShadown backgroundColor="white">
-          <TouchableOpacity
-            style={[styles.viewInputButton, !isSubmit ? styles.viewInputButton_Disabled : null]}
-            disabled={!isSubmit}
-            onPress={acceptRide} // Gọi hàm acceptRide khi nhấn nút
-          >
+          <TouchableOpacity style={[styles.viewInputButton, !isSubmit ? styles.viewInputButton_Disabled : null]} disabled={!isSubmit}>
             <Text style={styles.txtSubmit}>BẮT ĐẦU</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.viewInputButton]} // Bạn cần thêm style cho nút từ chối
-            onPress={rejectRide} // Gọi hàm rejectRide khi nhấn nút
-          >
-            <Text style={styles.txtSubmit}>TỪ CHỐI</Text>
           </TouchableOpacity>
         </Footer>
       </SafeAreaView>

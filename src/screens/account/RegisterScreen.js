@@ -10,8 +10,11 @@ import SCREENS from '~/constant/screens';
 import { storeToken } from '~/configs/storageUtils';
 import axios from 'axios';
 import { SERVER_URL } from '~/configs/api.config';
+import { useAppDispatch } from '~/configs/hooks';
+import { setDriverId } from '~/redux/driver/actions';
 
 const RegisterScreen = () => {
+  const dispatch = useAppDispatch();
   const navigation = React.useContext(NavigationContext);
   const [fullName, setFullName] = useState(null);
   const [phoneNumber, setPhoneNumber] = useState(null);
@@ -57,9 +60,13 @@ const RegisterScreen = () => {
         licensePlate: licensePlate,
       });
       const token = response.data.token;
-      if (response.status === 200 && token) {
+      const driverId = response.data.driverId ?? 10;
+      if (response.status === 200 && token && driverId) {
         // Lưu token vào AsyncStorage
         await storeToken(token);
+
+        // Cập nhật Redux store với driverId
+        dispatch(setDriverId(driverId));
 
         // Chuyển hướng sau khi đăng nhập thành công
         navigation.navigate(SCREENS.HOME);

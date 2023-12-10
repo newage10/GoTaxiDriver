@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import BackgroundFetch from 'react-native-background-fetch';
 import { store } from '~/configs/store.config';
+import socketService from './socketService';
 // Đường dẫn tới Redux store
 
 const BackgroundFetchService = () => {
@@ -18,14 +19,28 @@ const BackgroundFetchService = () => {
 
           // Lấy trạng thái hiện tại từ Redux store
           const currentState = store.getState();
-          const currentPosition = currentState.map.currentLocation; // Đảm bảo đường dẫn này phản ánh cấu trúc của store của bạn
+          const currentPosition = currentState?.map?.currentLocation;
+          const isDriverAvailable = currentState?.driver?.isAvailable ?? false;
+          const driverId = currentState?.driver?.profile?.id ?? 10;
 
-          console.log('Test 2 currentState: ', JSON.stringify(currentState));
-          if (currentPosition) {
-            console.log('Test 2 background position:', JSON.stringify(currentPosition));
+          if (isDriverAvailable) {
+            // Kết nối với Socket.IO nếu chưa kết nối
+            if (!socketService.isConnected()) {
+              socketService.connect();
+            }
 
-            // Gửi vị trí hiện tại đến server hoặc thực hiện các tác vụ khác
-            // TODO: Gọi API hoặc gửi thông tin qua Socket.IO
+            // Gửi vị trí hiện tại đến server nếu có vị trí
+            if (currentPosition) {
+              console.log('Test 2 background position:', JSON.stringify(currentPosition));
+              // socketService.updateLocation(currentPosition.coords);
+              socketService.updateLocation(driverId, {
+                latitude: currentPosition.coords.latitude,
+                longitude: currentPosition.coords.longitude,
+              });
+            }
+          } else {
+            // Ngắt kết nối với Socket.IO
+            socketService.disconnect();
           }
 
           // Kết thúc background task

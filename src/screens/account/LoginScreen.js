@@ -11,8 +11,11 @@ import { SERVER_URL } from '~/configs/api.config';
 import { NavigationContext } from '@react-navigation/native';
 import axios from 'axios';
 import { storeToken } from '~/configs/storageUtils';
+import { useAppDispatch } from '~/configs/hooks';
+import { setDriverId } from '~/redux/driver/actions';
 
 const LoginScreen = () => {
+  const dispatch = useAppDispatch();
   const navigation = React.useContext(NavigationContext);
   const [phoneNumber, setPhoneNumber] = useState(null);
   const [password, setPassword] = useState(null);
@@ -29,9 +32,13 @@ const LoginScreen = () => {
       });
       console.log('Test 2 response: ', JSON.stringify(response));
       const token = response.data.token;
-      if (response.status === 200 && token) {
+      const driverId = response.data.driverId ?? 10;
+      if (response.status === 200 && token && driverId) {
         // Lưu token vào AsyncStorage
         await storeToken(token);
+
+        // Cập nhật Redux store với driverId
+        dispatch(setDriverId(driverId));
 
         // Chuyển hướng sau khi đăng nhập thành công
         navigation.navigate(SCREENS.HOME);

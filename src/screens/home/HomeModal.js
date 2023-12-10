@@ -1,52 +1,185 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Dimensions, TextInput, Platform, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Platform, RefreshControl, Alert } from 'react-native';
 import FastImage from 'react-native-fast-image';
 import KeyboardSpacer from 'react-native-keyboard-spacer';
 import Modal from 'react-native-modal';
 import { HeaderPopup } from '~/components/HeaderPopup';
 import images from '~/themes/images';
-import { responsiveFontSizeOS, responsiveSizeOS } from '~/helper/GeneralMain';
+import { responsiveFontSizeOS, responsiveSizeOS, screenWidth } from '~/helper/GeneralMain';
 import Colors from '~/themes/colors';
+import { getAllServices, getCarTypes, registerCar } from '~/services/apiService';
+import { TextInputComponent } from '~/components/TextInputComponent';
+import ListDataModal from './ListDataModal';
+import useToggleState from '~/hooks/useToggleState';
+import { useAppSelector } from '~/configs/hooks';
 
 const HomeModal = (props) => {
   const { modalVisible, toggleModalVisible, modalTitle, listDataModal } = props ?? {};
+  const [carTypes, setCarTypes] = useState([]);
+  const [servicesTypes, setServicesTypes] = useState([]);
+  const [licensePlate, setLicensePlate] = useState(null);
+  const [carName, setCarName] = useState(null);
+  const [carTypeVisible, toggleCarTypeVisible] = useToggleState(false);
+  const [selectedCarType, setSelectedCarType] = useState(null);
+  const [serviceTypeVisible, toggleServiceTypeVisible] = useToggleState(false);
+  const [selectedServiceType, setSelectedServiceType] = useState(null);
+  const [isSubmit, setCheckSubmit] = useState(true);
+  const driverId = useAppSelector((state) => state?.driver?.driverId ?? 10);
 
   const handleClose = () => {
     toggleModalVisible();
   };
 
-  const handleSelect = (item) => {
-    return null;
+  const handleSetData = (data, key) => {
+    switch (key) {
+      case registerDriver.licensePlate:
+        setLicensePlate(data);
+        break;
+      case registerDriver.carName:
+        setCarName(data);
+        break;
+    }
   };
 
-  const viewItemHistory = (item) => {
-    // console.log('Test now item: ', JSON.stringify(item));
-    return (
-      <>
-        <TouchableOpacity style={[styles.viewItem]} onPress={handleSelect(item)}>
-          <View style={styles.viewItemLeft}>
-            <FastImage source={item?.goType === 1 ? images.icMotorcycle : item?.goType === 2 ? images.icCar : images.icCarXL} style={styles.icItem} resizeMode="contain" />
-            <View style={styles.viewItemContent}>
-              <Text style={styles.txtTitle} numberOfLines={2} ellipsizeMode="tail">{`Từ: ${item?.from}`}</Text>
-              <Text style={styles.txtDesc} numberOfLines={2} ellipsizeMode="tail">{`Đến: ${item?.to}`}</Text>
-            </View>
-          </View>
-          <View style={styles.viewItemRight}>
-            <Text style={styles.txtTitleRight}>{'Thời gian'}</Text>
-            <Text style={styles.txtDesc}>{item?.time}</Text>
-          </View>
-        </TouchableOpacity>
-      </>
-    );
+  // Gọi API lấy các loại xe
+  const fetchCarTypes = async () => {
+    try {
+      const response = await getCarTypes();
+      console.log('Test 2 response: ', JSON.stringify(response));
+      setCarTypes(response); // Lưu dữ liệu vào state
+    } catch (error) {
+      console.error('Error fetching car types:', error);
+    }
   };
+
+  // Gọi API lấy tất cả các dịch vụ
+  const fetchServices = async () => {
+    try {
+      const response = await getAllServices();
+      setServicesTypes(response); // Lưu dữ liệu vào state
+    } catch (error) {
+      console.error('Error fetching services:', error);
+    }
+  };
+
+  const handleSelectCarType = (item) => () => {
+    setSelectedCarType(item);
+    toggleCarTypeVisible();
+  };
+
+  const handleSelectServiceType = (item) => () => {
+    setSelectedServiceType(item);
+    toggleServiceTypeVisible();
+  };
+
+  const handleSubmit = async () => {
+    const carData = {
+      driverId: driverId,
+      carType: selectedCarType.id,
+      serviceId: selectedServiceType.id,
+      carName: carName,
+      licensePlate: licensePlate,
+    };
+
+    try {
+      const response = await registerCar(carData);
+      console.log('Car registered successfully:', response);
+      Alert.alert('Thông báo', 'Đăng ký thông tin xe thành công');
+      // Xử lý thêm sau khi đăng ký thành công
+    } catch (error) {
+      console.error('Error registering car:', error);
+      // Xử lý lỗi
+    }
+  };
+
+  useEffect(() => {
+    fetchCarTypes();
+    fetchServices();
+  }, []);
+
+  useEffect(() => {
+    if (driverId && selectedCarType?.id && selectedServiceType?.id && carName && carName) {
+      setCheckSubmit(true);
+    } else {
+      setCheckSubmit(false);
+    }
+  }, [selectedCarType, selectedServiceType, carName, carName, driverId]);
+
+  const onRefreshLoading = () => {};
 
   return (
-    <Modal propagateSwipe animationIn="slideInUp" animationOut="slideOutDown" isVisible={modalVisible} onBackdropPress={handleClose} swipeDirection="down" style={styles.containerModal}>
-      <View style={[styles.modalView, { marginTop: responsiveSizeOS(400) }]}>
+    <Modal propagateSwipe animationIn="slideInUp" animationOut="slideOutDown" isVisible={modalVisible} onBackdropPress={handleClose} style={styles.containerModal}>
+      <View style={[styles.modalView, { marginTop: responsiveSizeOS(200) }]}>
         <HeaderPopup onClose={handleClose} title={modalTitle} styleTitle={styles.fontTitle} />
-        <View style={styles.viewLine} />
-        <FlatList showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="always" data={listDataModal} removeClippedSubviews={true} renderItem={({ item }) => viewItemHistory(item)} keyExtractor={(item, index) => index.toString()} onEndReachedThreshold={0.5} style={styles.flatList} />
+        <View style={styles.viewContainer}>
+          <ScrollView contentContainerStyle={styles.scrollView} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" refreshControl={<RefreshControl refreshing={false} onRefresh={onRefreshLoading} />}>
+            {/* Input cho biển số xe */}
+            <TextInputComponent
+              textLabel="Biển số xe"
+              textLabelStyle={styles.title}
+              labelContainerStyle={styles.viewTextOption}
+              value={licensePlate}
+              onChangeText={(e) => handleSetData(e, registerDriver.licensePlate)}
+              returnKeyType={'done'}
+              autoCorrect={false}
+              allowFontScaling={false}
+              keyboardType="number-pad"
+              placeholder={'Nhập biển số xe'}
+              viewStyle={styles.viewInputText}
+              setValue={setLicensePlate}
+            />
+            {/* Input cho tên xe */}
+            <TextInputComponent
+              textLabel="Tên xe"
+              textLabelStyle={styles.title}
+              labelContainerStyle={styles.viewTextOption}
+              value={carName}
+              onChangeText={(e) => handleSetData(e, registerDriver.carName)}
+              returnKeyType={'done'}
+              autoCorrect={false}
+              allowFontScaling={false}
+              keyboardType="number-pad"
+              placeholder={'Nhập tên xe'}
+              viewStyle={styles.viewInputText}
+              setValue={setLicensePlate}
+            />
+            <Text style={[styles.viewContentText, styles.viewTextOption]}>Loại xe</Text>
+            <View style={styles.viewInput}>
+              <View style={styles.viewInputOneLeft}>
+                <View style={styles.viewInputItem}>
+                  <Text style={styles.viewInputOneLeft_Text} numberOfLines={1} ellipsizeMode="tail">
+                    {selectedCarType?.car_type || 'Chọn loại xe'}
+                  </Text>
+                </View>
+              </View>
+              <TouchableOpacity style={styles.viewInputOneRight_Button} onPress={toggleCarTypeVisible}>
+                <Text style={styles.viewInputOneRight_Text}>Thay đổi</Text>
+              </TouchableOpacity>
+            </View>
+            <Text style={[styles.viewContentText, styles.viewTextOption]}>Dịch vụ</Text>
+            <View style={styles.viewInput}>
+              <View style={styles.viewInputOneLeft}>
+                <View style={styles.viewInputItem}>
+                  <Text style={styles.viewInputOneLeft_Text} numberOfLines={1} ellipsizeMode="tail">
+                    {selectedServiceType?.serviceName || 'Chọn dịch vụ'}
+                  </Text>
+                </View>
+              </View>
+              <TouchableOpacity style={styles.viewInputOneRight_Button} onPress={toggleServiceTypeVisible}>
+                <Text style={styles.viewInputOneRight_Text}>Thay đổi</Text>
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity style={[styles.viewInputButton, !isSubmit ? styles.viewInputButton_Disabled : null]} disabled={!isSubmit} onPress={handleSubmit}>
+              <Text style={styles.txtSubmit}>XÁC NHẬN</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </View>
         {Platform.OS === 'ios' ? <KeyboardSpacer /> : null}
+        {/* Modal cho Loại xe */}
+        <ListDataModal modalVisible={carTypeVisible} toggleModalVisible={toggleCarTypeVisible} modalTitle="Chọn loại xe" infoData={carTypes} valueId={selectedCarType?.id} handleSelect={handleSelectCarType} />
+
+        {/* Modal cho ID Dịch vụ */}
+        <ListDataModal modalVisible={serviceTypeVisible} toggleModalVisible={toggleServiceTypeVisible} modalTitle="Chọn dịch vụ" infoData={servicesTypes} valueId={selectedServiceType?.id} handleSelect={handleSelectServiceType} />
       </View>
     </Modal>
   );
@@ -54,7 +187,26 @@ const HomeModal = (props) => {
 
 export default HomeModal;
 
+const registerDriver = {
+  licensePlate: 'licensePlate',
+  carName: 'carName',
+  carType: 'carType',
+  driverId: 'driverId',
+  serviceId: 'serviceId',
+};
+
 const styles = StyleSheet.create({
+  viewContainer: {
+    flexGrow: 1,
+    width: '100%',
+    backgroundColor: Colors.txtWhite,
+    borderTopLeftRadius: responsiveSizeOS(20),
+    borderTopRightRadius: responsiveSizeOS(20),
+    paddingHorizontal: responsiveSizeOS(16),
+  },
+  scrollView: {
+    flex: 1,
+  },
   containerModal: {
     flex: 1,
     margin: 0,
@@ -86,93 +238,12 @@ const styles = StyleSheet.create({
     color: 'rgb(11, 11, 11)',
     textTransform: 'uppercase',
   },
-  viewSearch: {
-    height: responsiveSizeOS(40),
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: 'rgb(255, 255, 255)',
-    borderWidth: responsiveSizeOS(0.5),
-    borderColor: 'rgb(203, 203, 203)',
-    borderRadius: responsiveSizeOS(10),
-    paddingHorizontal: responsiveSizeOS(10),
-    marginBottom: responsiveSizeOS(16),
-    width: '98%',
-  },
-  btnSearch: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  imgSearch: {
-    width: responsiveSizeOS(16),
-    height: responsiveSizeOS(16),
-    resizeMode: 'contain',
-  },
-  imgClose: {
-    width: responsiveSizeOS(24),
-    height: responsiveSizeOS(24),
-    resizeMode: 'contain',
-  },
-  viewClose: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   viewInputText: {
     fontSize: responsiveFontSizeOS(16),
     color: 'rgb(11, 11, 11)',
     marginLeft: responsiveSizeOS(8),
     textAlign: 'left',
     width: '85%',
-  },
-  flatList: {
-    width: '98%',
-    paddingHorizontal: responsiveSizeOS(5),
-  },
-  icCheck: {
-    width: responsiveSizeOS(15),
-    height: responsiveSizeOS(15),
-    resizeMode: 'contain',
-  },
-  viewItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: responsiveSizeOS(25),
-  },
-  txtItemTitle: {
-    fontSize: responsiveFontSizeOS(17),
-    color: 'rgb(11, 11, 11)',
-    marginLeft: responsiveSizeOS(10),
-  },
-  imgIcon: {
-    width: responsiveSizeOS(28),
-    height: responsiveSizeOS(28),
-  },
-  viewLeftItem: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-  },
-
-  viewItemLeft: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    width: '70%',
-  },
-  icItem: {
-    width: responsiveSizeOS(24),
-    height: responsiveSizeOS(24),
-  },
-  viewItemContent: {
-    justifyContent: 'flex-start',
-    alignItems: 'flex-start',
-    marginLeft: responsiveSizeOS(15),
-  },
-  viewItemRight: {
-    justifyContent: 'center',
-    alignItems: 'flex-end',
-    width: '30%',
   },
   txtTitle: {
     fontSize: responsiveFontSizeOS(16),
@@ -188,12 +259,90 @@ const styles = StyleSheet.create({
     fontSize: responsiveFontSizeOS(16),
     color: 'black',
   },
-  viewLine: {
-    height: responsiveSizeOS(2),
-    width: responsiveSizeOS(240),
-    backgroundColor: Colors.txtGray,
+  textInput: {
+    borderWidth: 1,
+    borderColor: Colors.txtGray,
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 15,
+  },
+  title: {
+    fontSize: responsiveFontSizeOS(16),
+    fontWeight: '400',
+    color: '#818C9C',
+  },
+  viewTextOption: {
+    marginTop: responsiveSizeOS(12),
+    marginBottom: responsiveSizeOS(4),
+  },
+  viewContentText: {
+    fontSize: responsiveFontSizeOS(16),
+    color: 'rgb(99, 109, 125)',
+    // fontFamily: Fonts.Regular,
+  },
+  viewInput: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    fontSize: responsiveFontSizeOS(16),
+    paddingHorizontal: responsiveSizeOS(15),
+    borderColor: 'rgb(203, 203, 203)',
+    borderRadius: responsiveSizeOS(15),
+    borderWidth: responsiveSizeOS(1),
+    height: responsiveSizeOS(40),
+  },
+  viewInputOneLeft: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    paddingVertical: responsiveSizeOS(5),
+  },
+  viewInputOneLeft_Icon: {
+    width: responsiveSizeOS(24),
+    height: responsiveSizeOS(24),
+    resizeMode: 'contain',
+  },
+  viewInputItem: {
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    width: screenWidth - responsiveSizeOS(164),
+  },
+  viewInputOneLeft_Text: {
+    fontSize: responsiveFontSizeOS(14),
+  },
+  viewInputOneRight_Button: {
+    backgroundColor: 'rgba(100, 112, 129, 0.2)',
+    borderRadius: responsiveSizeOS(8),
+    paddingHorizontal: responsiveSizeOS(9),
+    height: responsiveSizeOS(26),
+    justifyContent: 'center',
+    alignItems: 'center',
+    opacity: 0.8,
+  },
+  viewInputOneRight_Text: {
+    fontSize: responsiveFontSizeOS(12),
+    color: '#C81111',
+    // fontFamily: Fonts.Bold,
+    fontWeight: 'bold',
+  },
+  txtSubmit: {
+    fontSize: responsiveFontSizeOS(16),
+    color: 'white',
+  },
+  viewInputButton: {
+    bottom: 0,
+    backgroundColor: Colors.btnSubmit,
+    borderRadius: responsiveSizeOS(15),
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: responsiveSizeOS(45),
+    width: screenWidth - responsiveSizeOS(45),
+    marginBottom: responsiveSizeOS(20),
     alignSelf: 'center',
-    marginTop: responsiveSizeOS(-10),
-    marginBottom: responsiveSizeOS(12),
+    marginTop: responsiveSizeOS(20),
+  },
+  viewInputButton_Disabled: {
+    backgroundColor: Colors.bgGray,
   },
 });

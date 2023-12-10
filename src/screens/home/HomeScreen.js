@@ -146,7 +146,7 @@ const HomeScreen = () => {
   };
 
   const viewBottomSheet = () => {
-    return <HomeModal modalVisible={historyVisible} toggleModalVisible={toggleHistoryVisible} modalTitle={'Lịch sử chuyến đi'} listDataModal={historyTrip} />;
+    return <HomeModal modalVisible={historyVisible} toggleModalVisible={toggleHistoryVisible} modalTitle={'Đăng ký thông tin Xe'} listDataModal={historyTrip} />;
   };
 
   const handleSelect = (item) => () => {
