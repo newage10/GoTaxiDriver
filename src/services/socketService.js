@@ -79,8 +79,15 @@ const socketService = {
     this.emit('driver_rejected', { requestId });
   },
 
-  // Thêm các phương thức khác để gửi các sự kiện hoặc dữ liệu cụ thể lên server
-  // Ví dụ: đăng nhập, đăng ký, v.v.
+  //hàm nghe sự kiện rideRequest
+  listenForRideRequest(callback) {
+    socket.on('rideRequest', callback);
+  },
+
+  //hàm hủy nghe sự kiện
+  stopListeningForRideRequest() {
+    socket.off('rideRequest');
+  },
 };
 
 export default socketService;

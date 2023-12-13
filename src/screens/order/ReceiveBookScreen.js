@@ -15,10 +15,13 @@ import { getCurrentLocation } from '~/redux/map/actions';
 import { store } from '~/configs/store.config';
 import socketService from '~/services/socketService';
 import { setDriverAvailability } from '~/redux/driver/actions';
+import { rideRequestData } from '~/data';
 
 const ReceiveBookScreen = () => {
   const dispatch = useAppDispatch();
   const [isSubmit, setCheckSubmit] = useState(true);
+  const [bookReceiveData, setBookReceiveData] = useState(null);
+  console.log('Test 2 bookReceiveData: ', JSON.stringify(bookReceiveData));
   const isAvailable = useAppSelector((state) => state?.driver?.isAvailable ?? false);
   const driverId = useAppSelector((state) => state?.driver?.profile?.id ?? 10);
   console.log('Test 2 isAvailable: ', isAvailable);
@@ -33,8 +36,14 @@ const ReceiveBookScreen = () => {
       // Tài xế bây giờ sẵn sàng nhận chuyến, gửi vị trí hiện tại
       getCurrentLocationMap();
       socketService.connect(); // Mở kết nối Socket.IO
+      socketService.listenForRideRequest((data) => {
+        // Xử lý dữ liệu yêu cầu đi chuyến tại đây
+        console.log('Ride request received:', data);
+        setBookReceiveData(data ?? rideRequestData);
+      });
     } else {
       console.log('Tài xế không sẵn sàng nhận chuyến');
+      socketService.stopListeningForRideRequest();
       socketService.disconnect(); // Ngắt kết nối Socket.IO
       // Nếu tài xế không còn sẵn sàng, gửi thông báo đến server nếu cần
     }
@@ -61,6 +70,43 @@ const ReceiveBookScreen = () => {
     );
   }, [dispatch, isAvailable]);
 
+  useEffect(() => {
+    // Cleanup function
+    return () => {
+      socketService.stopListeningForRideRequest();
+      socketService.disconnect();
+    };
+  }, []);
+
+  const viewItem = (name, value, line = true, fWidthLeft = null, fWidthRight = null) => {
+    return (
+      <View>
+        <View style={styles.viewItem}>
+          <Text style={[styles.txtItemLeft, fWidthLeft]}>{name}</Text>
+          <Text style={[styles.txtItemRight, fWidthRight]}>{value}</Text>
+        </View>
+        {line ? <View style={styles.viewLine} /> : null}
+      </View>
+    );
+  };
+
+  const viewReceiveBook = () => {
+    const { customerName, pickupLocationName, destinationName, amountBook, paymentName, paymentStatus, noteBook } = bookReceiveData ?? {};
+    return (
+      <>
+        <Text style={styles.txtReceiveInfo}>Thông tin chuyến </Text>
+        <View style={styles.viewLine} />
+        {viewItem('Tên khách hàng', 'Nguyễn Văn A', true)}
+        {viewItem('Điểm đón', 'Đường 3/2, Q.10', true)}
+        {viewItem('Điểm đến', 'Dinh Độc Lập, Q.1', true)}
+        {viewItem('Mức phí', amountBook, true)}
+        {viewItem('Phương thức thanh toán', paymentName, true)}
+        {viewItem('Trạng thái thanh toán', paymentStatus, true)}
+        {viewItem('Tin nhắn KH', noteBook, true)}
+      </>
+    );
+  };
+
   return (
     <LayoutView>
       <Header barStyle="dark-content" title={'Thông tin chuyến'} onPressLeft={() => navigation.goBack()} />
@@ -72,6 +118,8 @@ const ReceiveBookScreen = () => {
               <FastImage source={isAvailable ? images.icSwitchOn : images.icSwitchOff} style={styles.imgReceiveBook} resizeMode="contain" />
             </TouchableOpacity>
           </View>
+          <View style={styles.viewLine} />
+          {viewReceiveBook()}
         </View>
         <Footer disableShadown backgroundColor="white">
           <TouchableOpacity style={[styles.viewInputButton, !isSubmit ? styles.viewInputButton_Disabled : null]} disabled={!isSubmit}>
@@ -173,10 +221,10 @@ const styles = StyleSheet.create({
   viewItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginVertical: responsiveSizeOS(8),
-    paddingVertical: responsiveSizeOS(8),
-    paddingHorizontal: responsiveSizeOS(10),
+    alignItems: 'flex-start',
+    marginVertical: responsiveSizeOS(2),
+    paddingVertical: responsiveSizeOS(2),
+    paddingHorizontal: responsiveSizeOS(16),
   },
   viewItemEnable: {
     backgroundColor: Colors.txtGreen,
@@ -241,5 +289,36 @@ const styles = StyleSheet.create({
   txtReceiveBook: {
     fontSize: responsiveFontSizeOS(16),
     color: 'rgb(11, 11, 11)',
+  },
+  txtItemLeft: {
+    fontSize: responsiveFontSizeOS(15),
+    color: 'rgb(4, 4, 4)',
+    // fontFamily: Fonts.Regular,
+    width: '40%',
+    textAlign: 'left',
+  },
+  txtItemRight: {
+    fontSize: responsiveFontSizeOS(15),
+    color: 'rgb(4, 4, 4)',
+    // fontFamily: Fonts.Regular,
+    width: '60%',
+    textAlign: 'right',
+  },
+  viewLine: {
+    borderColor: 'rgb(203, 203, 203)',
+    marginVertical: responsiveSizeOS(6),
+    // width: '100%',
+    borderWidth: responsiveSizeOS(0.7),
+    borderStyle: 'dotted',
+    borderRadius: responsiveSizeOS(1),
+    marginHorizontal: responsiveSizeOS(16),
+  },
+  txtReceiveInfo: {
+    fontSize: responsiveFontSizeOS(16),
+    color: 'rgb(11, 11, 11)',
+    marginTop: responsiveSizeOS(10),
+    marginHorizontal: responsiveSizeOS(16),
+    textAlign: 'center',
+    marginBottom: responsiveSizeOS(16),
   },
 });

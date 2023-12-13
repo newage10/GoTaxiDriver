@@ -332,3 +332,30 @@ export const newBookData = [
     goType: 2,
   },
 ];
+
+export const rideRequestData = {
+  requestId: 'uniqueRequestId',
+  location: {
+    longitude: '106.63881',
+    latitude: '10.80201',
+  },
+  bookingInfo: {
+    pickupLocationId: 1,
+    destinationId: 2,
+    bookingWay: 2,
+    bookingTime: '2023-11-07 23:24:06.444+07',
+    adminId: 3,
+    customerId: 3,
+    sum: 100000,
+    paymentType: 1,
+    paymentStatus: 1,
+    note: 'Đến đúng hẹn',
+    carType: 2,
+    serviceId: 2,
+    socketId: 'LAJ8XIg_7XYCBRuhAAAB',
+    pickupLocation: {
+      type: 'Point',
+      coordinates: ['106.63881', '10.80201'],
+    },
+  },
+};
