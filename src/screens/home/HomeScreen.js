@@ -15,7 +15,6 @@ import RegisterCarModal from './RegisterCarModal';
 import useToggleState from '~/hooks/useToggleState';
 import Colors from '~/themes/colors';
 import { useDispatch } from 'react-redux';
-// import { getCurrentLocation } from '~/redux/map/actions';
 
 const HomeScreen = () => {
   const dispatch = useDispatch();
