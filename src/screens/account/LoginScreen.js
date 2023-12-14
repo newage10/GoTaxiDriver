@@ -20,10 +20,7 @@ const LoginScreen = () => {
   const navigation = React.useContext(NavigationContext);
   const [phoneNumber, setPhoneNumber] = useState(null);
   const [password, setPassword] = useState(null);
-
-  useEffect(() => {
-    SplashScreen.hide();
-  }, []);
+  const [isSubmit, setCheckSubmit] = useState(false);
 
   const handleLogin = async () => {
     const resData = {
@@ -45,12 +42,10 @@ const LoginScreen = () => {
 
         // Chuyển hướng sau khi đăng nhập thành công
         navigation.navigate(SCREENS.HOME);
-      } else {
-        Alert.alert('Thông báo', 'Đăng nhập thất bại. Vui lòng kiểm tra lại.');
       }
     } catch (error) {
       console.log('Test 2 error: ', error);
-      Alert.alert('Thông báo', 'Đăng nhập thất bại. Vui lòng kiểm tra lại.');
+      return Alert.alert('Thông báo', 'Đăng nhập thất bại. Vui lòng kiểm tra lại.');
     }
   };
 
@@ -67,6 +62,16 @@ const LoginScreen = () => {
         break;
     }
   };
+
+  useEffect(() => {
+    setTimeout(() => {
+      SplashScreen.hide();
+    }, 3000);
+  }, []);
+
+  useEffect(() => {
+    phoneNumber && password ? setCheckSubmit(true) : setCheckSubmit(false);
+  }, [phoneNumber, password]);
 
   return (
     <Layout style={styles.viewContainer}>
@@ -86,7 +91,7 @@ const LoginScreen = () => {
             </TouchableOpacity>
           </View>
         </View>
-        <TouchableOpacity style={styles.btnSubmit} onPress={handleLogin}>
+        <TouchableOpacity style={[[styles.btnSubmit, !isSubmit ? styles.viewInputButton_Disabled : null]]} disabled={isSubmit ? false : true} onPress={handleLogin}>
           <Text style={styles.txtSubmit}>Đăng nhập</Text>
         </TouchableOpacity>
         <View style={styles.viewLoginOption}>
@@ -217,5 +222,8 @@ const styles = StyleSheet.create({
     fontSize: responsiveFontSizeOS(16),
     color: Colors.txtGreen,
     fontWeight: 'bold',
+  },
+  viewInputButton_Disabled: {
+    backgroundColor: Colors.bgGray,
   },
 });

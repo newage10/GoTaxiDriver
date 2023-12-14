@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { Alert } from 'react-native';
 import { getToken } from '~/configs/storageUtils';
 
 const API_BASE_URL = 'http://35.220.201.164/v1';
@@ -27,14 +28,37 @@ apiService.interceptors.request.use(
   }
 );
 
-//Hàm login
+//Hàm đăng nhập app
 export const loginApp = async (loginData) => {
   try {
     const response = await apiService.post('/driver/login', loginData);
     return response.data;
   } catch (error) {
-    console.error('Error login car App:', error);
-    throw error;
+    let errorMessage = 'Đã xảy ra lỗi. Vui lòng thử lại';
+
+    // Kiểm tra xem có phản hồi từ server không và có thông báo lỗi không
+    if (error?.response?.data) {
+      errorMessage = error.response.data;
+    }
+
+    return Alert.alert('Thông báo', errorMessage);
+  }
+};
+
+//Hàm đăng ký app
+export const registerApp = async (registerData) => {
+  try {
+    const response = await apiService.post('/driver/register', registerData);
+    return response.data;
+  } catch (error) {
+    let errorMessage = 'Đã xảy ra lỗi. Vui lòng thử lại';
+
+    // Kiểm tra xem có phản hồi từ server không và có thông báo lỗi không
+    if (error?.response?.data) {
+      errorMessage = error.response.data;
+    }
+
+    return Alert.alert('Thông báo', errorMessage);
   }
 };
 
@@ -44,8 +68,14 @@ export const getCarTypes = async () => {
     const response = await apiService.get('/cartypes');
     return response.data;
   } catch (error) {
-    console.error('Error fetching car types:', error);
-    throw error;
+    let errorMessage = 'Đã xảy ra lỗi. Vui lòng thử lại';
+
+    // Kiểm tra xem có phản hồi từ server không và có thông báo lỗi không
+    if (error?.response?.data) {
+      errorMessage = error.response.data;
+    }
+
+    return Alert.alert('Thông báo', errorMessage);
   }
 };
 
@@ -55,8 +85,14 @@ export const getAllServices = async () => {
     const response = await apiService.get('/services');
     return response.data;
   } catch (error) {
-    console.error('Error fetching services:', error);
-    throw error;
+    let errorMessage = 'Đã xảy ra lỗi. Vui lòng thử lại';
+
+    // Kiểm tra xem có phản hồi từ server không và có thông báo lỗi không
+    if (error?.response?.data) {
+      errorMessage = error.response.data;
+    }
+
+    return Alert.alert('Thông báo', errorMessage);
   }
 };
 
@@ -66,8 +102,14 @@ export const registerCar = async (carData) => {
     const response = await apiService.post('/car/create', carData);
     return response.data;
   } catch (error) {
-    console.error('Error registering car:', error);
-    throw error;
+    let errorMessage = 'Đã xảy ra lỗi. Vui lòng thử lại';
+
+    // Kiểm tra xem có phản hồi từ server không và có thông báo lỗi không
+    if (error?.response?.data) {
+      errorMessage = error.response.data;
+    }
+
+    return Alert.alert('Thông báo', errorMessage);
   }
 };
 
@@ -77,8 +119,14 @@ export const getDriverCars = async (driverId) => {
     const response = await apiService.get(`/car/driverid/${driverId}`);
     return response.data;
   } catch (error) {
-    console.error('Error fetching driver cars:', error);
-    throw error;
+    let errorMessage = 'Đã xảy ra lỗi. Vui lòng thử lại';
+
+    // Kiểm tra xem có phản hồi từ server không và có thông báo lỗi không
+    if (error?.response?.data) {
+      errorMessage = error.response.data;
+    }
+
+    return Alert.alert('Thông báo', errorMessage);
   }
 };
 

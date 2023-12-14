@@ -1,5 +1,5 @@
 import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout } from '~/components/Layout';
 import FastImage from 'react-native-fast-image';
 import Colors from '~/themes/colors';
@@ -12,6 +12,7 @@ import axios from 'axios';
 import { SERVER_URL } from '~/configs/api.config';
 import { useAppDispatch } from '~/configs/hooks';
 import { setDriverId } from '~/redux/driver/actions';
+import { registerApp } from '~/services/apiService';
 
 const RegisterScreen = () => {
   const dispatch = useAppDispatch();
@@ -22,7 +23,7 @@ const RegisterScreen = () => {
   const [password, setPassword] = useState(null);
   const [rePassword, setRePassword] = useState(null);
   const [privacyPolicyOption, setPrivacyPolicyOption] = useState(false);
-  const [licensePlate, setLicensePlate] = useState(null);
+  const [isSubmit, setCheckSubmit] = useState(false);
 
   const handleSetData = (data, key) => {
     switch (key) {
@@ -42,26 +43,24 @@ const RegisterScreen = () => {
       case paramRegister.rePassword:
         setRePassword(data);
         break;
-      case paramRegister.licensePlate:
-        setLicensePlate(data);
-        break;
       default:
         break;
     }
   };
 
   const handleRegister = async () => {
+    const resData = {
+      phoneNo: phoneNumber,
+      password: password,
+      fullname: fullName,
+      email: email,
+    };
     try {
-      const response = await axios.post(`${SERVER_URL}/v1/driver/register`, {
-        phoneNo: phoneNumber,
-        password: password,
-        fullname: fullName,
-        email: email,
-        licensePlate: licensePlate,
-      });
-      const token = response.data.token;
-      const driverId = response.data.driverId ?? 10;
-      if (response.status === 200 && token && driverId) {
+      const response = await registerApp(resData);
+      const token = response?.token;
+      const driverId = response?.data?.id ?? 10;
+      console.log('Test 2 res register: ', JSON.stringify(response));
+      if (token && driverId) {
         // Lưu token vào AsyncStorage
         await storeToken(token);
 
@@ -82,6 +81,10 @@ const RegisterScreen = () => {
   const handleSelectOption = () => {
     setPrivacyPolicyOption(!privacyPolicyOption);
   };
+
+  useEffect(() => {
+    fullName && phoneNumber && email && password && password === rePassword && privacyPolicyOption ? setCheckSubmit(true) : setCheckSubmit(false);
+  }, [fullName, phoneNumber, email, password, rePassword, privacyPolicyOption]);
 
   return (
     <Layout style={styles.viewContainer}>
@@ -104,16 +107,13 @@ const RegisterScreen = () => {
           <View style={styles.viewInput}>
             <TextInput value={rePassword} onChangeText={(e) => handleSetData(e, paramRegister.rePassword)} secureTextEntry={true} style={styles.viewInputText} placeholder="Xác nhận mật khẩu" autoCorrect={false} maxLength={20} allowFontScaling={false} keyboardType="number-pad" />
           </View>
-          <View style={styles.viewInput}>
-            <TextInput value={licensePlate} onChangeText={(e) => handleSetData(e, paramRegister.licensePlate)} style={styles.viewInputText} placeholder="Biển số xe" autoCorrect={false} maxLength={15} allowFontScaling={false} keyboardType="default" />
-          </View>
           <View style={styles.viewSelectOption}>
             <TouchableOpacity style={styles.btnSelectOption} onPress={handleSelectOption}>
               <FastImage source={privacyPolicyOption ? images.icCheckbox : images.icUnCheckbox} style={styles.imgSelectOption} resizeMode="contain" />
             </TouchableOpacity>
             <Text style={styles.txtSelectOption}>{`Bằng việc bạn chọn tạo cửa hàng, bạn đồng ý với Điều khoản sử dụng của App.`}</Text>
           </View>
-          <TouchableOpacity style={styles.btnSubmit} onPress={handleRegister}>
+          <TouchableOpacity style={[[styles.btnSubmit, !isSubmit ? styles.viewInputButton_Disabled : null]]} disabled={!isSubmit} onPress={handleRegister}>
             <Text style={styles.txtSubmit}>Đăng ký</Text>
           </TouchableOpacity>
           <View style={styles.viewQuestion}>
@@ -136,7 +136,6 @@ const paramRegister = {
   email: 'email',
   password: 'password',
   rePassword: 'rePassword',
-  licensePlate: 'licensePlate',
 };
 
 const styles = StyleSheet.create({
@@ -242,5 +241,8 @@ const styles = StyleSheet.create({
     fontSize: responsiveFontSizeOS(16),
     color: Colors.txtGreen,
     fontWeight: 'bold',
+  },
+  viewInputButton_Disabled: {
+    backgroundColor: Colors.bgGray,
   },
 });
