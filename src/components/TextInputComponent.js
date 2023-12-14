@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgb(203, 203, 203)',
     backgroundColor: 'rgb(255, 255, 255)',
     paddingHorizontal: responsiveSizeOS(15),
-    borderRadius: responsiveSizeOS(15),
+    borderRadius: responsiveSizeOS(12),
     height: responsiveSizeOS(40),
     marginBottom: responsiveSizeOS(5),
   },

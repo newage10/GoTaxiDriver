@@ -8,18 +8,15 @@ import { SCREEN_WIDTH, isEmptyObj, responsiveFontSizeOS, responsiveSizeOS } from
 import LayoutView from '~/components/LayoutView';
 import FastImage from 'react-native-fast-image';
 import images from '~/themes/images';
-import useToggleState from '~/hooks/useToggleState';
 import Geolocation from '@react-native-community/geolocation';
 import { useAppDispatch, useAppSelector } from '~/configs/hooks';
 import { getCurrentLocation } from '~/redux/map/actions';
-import { store } from '~/configs/store.config';
 import socketService from '~/services/socketService';
 import { setDriverAvailability } from '~/redux/driver/actions';
 import { rideRequestData } from '~/data';
 
 const ReceiveBookScreen = () => {
   const dispatch = useAppDispatch();
-  const [isSubmit, setCheckSubmit] = useState(true);
   const [bookReceiveData, setBookReceiveData] = useState(null);
   console.log('Test 2 bookReceiveData: ', JSON.stringify(bookReceiveData));
   const isAvailable = useAppSelector((state) => state?.driver?.isAvailable ?? false);
@@ -27,6 +24,18 @@ const ReceiveBookScreen = () => {
   console.log('Test 2 isAvailable: ', isAvailable, isEmptyObj(bookReceiveData), JSON.stringify(bookReceiveData));
 
   const navigation = React.useContext(NavigationContext);
+
+  // Hàm từ chối cuốc xe
+  const handleRejectRide = (driverId) => () => {
+    socketService.emit('driver_rejected', { driverId });
+    console.log('Tài xế từ chối cuốc xe:', driverId);
+  };
+
+  //Hàm tài xế chấp nhận cuốc xe
+  const handleAcceptRide = (driverId) => () => {
+    socketService.acceptRide(driverId);
+    console.log('Cuốc xe đã được chấp nhận:', driverId);
+  };
 
   const toggleAvailability = () => {
     const newAvailability = !isAvailable;
@@ -37,7 +46,7 @@ const ReceiveBookScreen = () => {
       getCurrentLocationMap();
       socketService.connect(); // Mở kết nối Socket.IO
       socketService.listenForRideRequest((data) => {
-        // Xử lý dữ liệu yêu cầu đi chuyến tại đây
+        // Xử lý dữ liệu yêu cầu đi chuyến
         console.log('Ride request received:', data);
         setBookReceiveData(data ?? rideRequestData);
       });
@@ -45,7 +54,6 @@ const ReceiveBookScreen = () => {
       console.log('Tài xế không sẵn sàng nhận chuyến');
       socketService.stopListeningForRideRequest();
       socketService.disconnect(); // Ngắt kết nối Socket.IO
-      // Nếu tài xế không còn sẵn sàng, gửi thông báo đến server nếu cần
     }
   };
 
@@ -123,10 +131,10 @@ const ReceiveBookScreen = () => {
           {viewReceiveBook()}
         </View>
         <Footer disableShadown backgroundColor="white" containerStyle={styles.viewButtonList}>
-          <TouchableOpacity style={[styles.viewInputButton, isEmptyObj(bookReceiveData) ? styles.viewInputButton_Disabled : null]} disabled={isEmptyObj(bookReceiveData)}>
+          <TouchableOpacity style={[styles.viewInputButton, isEmptyObj(bookReceiveData) ? styles.viewInputButton_Disabled : null]} disabled={isEmptyObj(bookReceiveData)} onPress={handleRejectRide(driverId)}>
             <Text style={styles.txtSubmit}>TỪ CHỐI</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.viewInputButton, isEmptyObj(bookReceiveData) ? styles.viewInputButton_Disabled : null]} disabled={isEmptyObj(bookReceiveData)}>
+          <TouchableOpacity style={[styles.viewInputButton, isEmptyObj(bookReceiveData) ? styles.viewInputButton_Disabled : null]} disabled={isEmptyObj(bookReceiveData)} onPress={handleAcceptRide(driverId)}>
             <Text style={styles.txtSubmit}>XÁC NHẬN</Text>
           </TouchableOpacity>
         </Footer>

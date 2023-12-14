@@ -1,7 +1,7 @@
 // socketService.js
 import io from 'socket.io-client';
 
-// Thay thế bằng địa chỉ URL thực tế của server Socket.IO của bạn
+// Thay thế bằng địa chỉ URL thực tế của server Socket.IO
 // const SOCKET_URL = 'http://192.168.1.10:5000';
 const SOCKET_URL = 'http://35.220.201.164';
 const socket = io(SOCKET_URL, {
@@ -51,10 +51,6 @@ const socketService = {
   },
 
   // Gửi cập nhật vị trí tài xế lên server
-  // updateLocation(locationData) {
-  //   this.emit('driver_connect', locationData);
-  // },
-
   updateLocation(driverId, locationData) {
     if (this.isConnected()) {
       const locationPayload = {
@@ -70,13 +66,13 @@ const socketService = {
     }
   },
   // Tài xế chấp nhận cuốc xe
-  acceptRide(requestId) {
-    this.emit('driver_accepted', { requestId });
+  acceptRide(driverId) {
+    this.emit('driver_accepted', { driverId });
   },
 
   // Tài xế từ chối cuốc xe
-  rejectRide(requestId) {
-    this.emit('driver_rejected', { requestId });
+  rejectRide(driverId) {
+    this.emit('driver_rejected', { driverId });
   },
 
   //hàm nghe sự kiện rideRequest

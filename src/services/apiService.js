@@ -130,4 +130,37 @@ export const getDriverCars = async (driverId) => {
   }
 };
 
+// Hàm lấy thông tin tài xế
+export const getDriverInfo = async (driverId) => {
+  try {
+    const response = await apiService.get(`/driver/${driverId}`);
+    return response.data;
+  } catch (error) {
+    let errorMessage = 'Đã xảy ra lỗi. Vui lòng thử lại';
+
+    // Kiểm tra xem có phản hồi từ server không và có thông báo lỗi không
+    if (error?.response?.data) {
+      errorMessage = error.response.data;
+    }
+
+    return Alert.alert('Thông báo', errorMessage);
+  }
+};
+
+export const updateDriverInfo = async (driverId, driverData) => {
+  try {
+    const response = await apiService.put(`/driver/updatedriverinfo/${driverId}`, driverData);
+    return response.data;
+  } catch (error) {
+    let errorMessage = 'Đã xảy ra lỗi. Vui lòng thử lại';
+
+    // Kiểm tra xem có phản hồi từ server không và có thông báo lỗi không
+    if (error?.response?.data) {
+      errorMessage = error.response.data.message || error.response.data;
+    }
+
+    return Alert.alert('Thông báo', errorMessage);
+  }
+};
+
 export default apiService;

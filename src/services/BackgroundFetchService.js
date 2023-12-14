@@ -31,7 +31,14 @@ const BackgroundFetchService = () => {
 
             // Gửi vị trí hiện tại đến server nếu có vị trí
             if (currentPosition) {
-              console.log('Test 2 background position:', JSON.stringify(currentPosition));
+              console.log(
+                'Test 2 background position:',
+                driverId,
+                JSON.stringify({
+                  latitude: currentPosition.coords.latitude,
+                  longitude: currentPosition.coords.longitude,
+                })
+              );
               // socketService.updateLocation(currentPosition.coords);
               socketService.updateLocation(driverId, {
                 latitude: currentPosition.coords.latitude,

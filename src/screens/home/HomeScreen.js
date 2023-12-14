@@ -15,32 +15,16 @@ import RegisterCarModal from './RegisterCarModal';
 import useToggleState from '~/hooks/useToggleState';
 import Colors from '~/themes/colors';
 import { useDispatch } from 'react-redux';
-import { getCurrentLocation } from '~/redux/map/actions';
+// import { getCurrentLocation } from '~/redux/map/actions';
 
 const HomeScreen = () => {
   const dispatch = useDispatch();
   const navigation = React.useContext(NavigationContext);
-  const [currentPosition, setCurrentPosition] = useState(null);
-  const [currentLatitude, setCurrentLatitude] = useState(defaultLocation?.latitude);
-  const [currentLongitude, setCurrentLongitude] = useState(defaultLocation?.longitude);
+  const [currentPosition, setCurrentPosition] = useState(fakeLocation);
   const [historyVisible, toggleHistoryVisible] = useToggleState(false);
-  const [historyTrip, setHistoryTrip] = useState(historyBookData);
+  const [useFakeLocation, setUseFakeLocation] = useState(false);
 
-  useEffect(() => {
-    SplashScreen.hide();
-    toggleHistoryVisible();
-    handlePermissionsContact();
-  }, []);
-
-  useEffect(() => {
-    if (currentPosition) {
-      const { latitude, longitude } = currentPosition?.coords;
-      setCurrentLatitude(latitude);
-      setCurrentLongitude(longitude);
-    }
-  }, [currentPosition]);
-
-  const handlePermissionsContact = () => {
+  const handlePermissionsLocation = () => {
     check(Platform.OS === 'ios' ? PERMISSIONS.IOS.LOCATION_WHEN_IN_USE : PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION)
       .then((result) => {
         switch (result) {
@@ -90,35 +74,44 @@ const HomeScreen = () => {
       });
   };
 
-  // const getCurrentLocation = () => {
-  //   Geolocation.getCurrentPosition((info) => {
-  //     console.log('Test vi tri: ', info);
-  //     setCurrentPosition(info);
-  //   });
-  // };
-
-  const getCurrentLocationMap = useCallback(() => {
+  const getCurrentLocation = () => {
     Geolocation.getCurrentPosition(
-      (position) => {
-        setCurrentPosition(position);
-        // Dispatch vị trí hiện tại vào Redux store
-        dispatch(getCurrentLocation(position));
+      (info) => {
+        console.log('Vị trí thực: ', info);
+        setCurrentPosition({
+          latitude: info?.coords?.latitude,
+          longitude: info?.coords?.longitude,
+          latitudeDelta: 0.0922,
+          longitudeDelta: 0.0421,
+        });
       },
       (error) => {
-        console.error(error);
+        console.error('Lỗi lấy vị trí: ', error);
+        // Xử lý lỗi hoặc thiết lập vị trí mặc định nếu cần
       },
       { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
     );
-  }, [dispatch]);
+  };
+  useEffect(() => {
+    setTimeout(() => {
+      SplashScreen.hide();
+    }, 3000);
+    toggleHistoryVisible();
+    handlePermissionsLocation();
+  }, []);
 
-  // Gọi hàm getCurrentLocation mỗi khi màn hình được focus
-  // useEffect(() => {
-  //   const unsubscribe = navigation.addListener('focus', () => {
-  //     getCurrentLocationMap();
-  //   });
+  useEffect(() => {
+    if (useFakeLocation) {
+      setCurrentPosition(fakeLocation); // Sử dụng vị trí giả
+    } else {
+      getCurrentLocation(); // Lấy vị trí thực
+    }
+  }, [useFakeLocation]);
 
-  //   return unsubscribe;
-  // }, [navigation, getCurrentLocationMap]);
+  const handleFakeLocation = () => {
+    console.log('Test 100 useFakeLocation: ', useFakeLocation);
+    setUseFakeLocation(!useFakeLocation);
+  };
 
   const viewSearchHeader = () => {
     return (
@@ -126,7 +119,7 @@ const HomeScreen = () => {
         <View style={styles.viewSearhHeader}>
           <View style={styles.viewLeftHeader}>
             <TouchableOpacity style={styles.btnMap} onPress={toggleHistoryVisible}>
-              <FastImage source={images.icMap} style={styles.imgMap} resizeMode="contain" />
+              <FastImage source={images.icMotorcycle} style={styles.imgMap} resizeMode="contain" />
             </TouchableOpacity>
           </View>
           <View style={styles.viewCenterHeader}>
@@ -149,52 +142,14 @@ const HomeScreen = () => {
     return <RegisterCarModal modalVisible={historyVisible} toggleModalVisible={toggleHistoryVisible} modalTitle={'Đăng ký thông tin Xe'} />;
   };
 
-  const handleSelect = (item) => () => {
-    navigation.navigate(SCREENS.BOOKING, {
-      searchLocation: {
-        locationType: searchType.INPUT,
-        inputSource: { desc: item?.fromDesc, location: item?.fromLocation },
-        inputDestination: { desc: item?.toDesc, location: item?.toLocation },
-      },
-    });
-  };
-
-  const viewItemHistory = (item) => {
-    return (
-      <>
-        <TouchableOpacity style={[styles.viewItem]} onPress={handleSelect(item)}>
-          <View style={styles.viewItemLeft}>
-            <FastImage source={item?.goType === 1 ? images.icMotorcycle : item?.goType === 2 ? images.icCar : images.icCarXL} style={styles.icItem} resizeMode="contain" />
-            <View style={styles.viewItemContent}>
-              <Text style={styles.txtTitle} numberOfLines={2} ellipsizeMode="tail">{`Từ: ${item?.from}`}</Text>
-              <Text style={styles.txtDesc} numberOfLines={2} ellipsizeMode="tail">{`Đến: ${item?.to}`}</Text>
-            </View>
-          </View>
-          <View style={styles.viewItemRight}>
-            <Text style={styles.txtTitleRight}>{'Thời gian'}</Text>
-            <Text style={styles.txtDesc}>{item?.time}</Text>
-          </View>
-        </TouchableOpacity>
-      </>
-    );
-  };
-
   return (
     <View style={styles.container}>
-      <MapView
-        style={styles.mapStyle}
-        showsUserLocation={false}
-        zoomEnabled={true}
-        zoomControlEnabled={true}
-        initialRegion={{
-          latitude: currentLatitude,
-          longitude: currentLongitude,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
-        }}
-      >
-        <Marker coordinate={{ latitude: currentLatitude, longitude: currentLongitude }} title={'Chợ Bến Thành'} description={'Chợ Bến Thành, Lê Lợi, Phường Bến Thành, Quận 1, Thành phố Hồ Chí Minh, Việt Nam'} />
+      <MapView style={styles.mapStyle} showsUserLocation={false} zoomEnabled={true} zoomControlEnabled={true} initialRegion={currentPosition}>
+        <Marker coordinate={currentPosition} title={'Chợ Bến Thành'} description={'Chợ Bến Thành, Lê Lợi, Phường Bến Thành, Quận 1, Thành phố Hồ Chí Minh, Việt Nam'} />
       </MapView>
+      <TouchableOpacity style={styles.btnFake} onPress={handleFakeLocation}>
+        <FastImage source={images.icMap} style={styles.imgFake} resizeMode="contain" />
+      </TouchableOpacity>
       {viewSearchHeader()}
       {viewBottomSheet()}
     </View>
@@ -203,13 +158,17 @@ const HomeScreen = () => {
 
 export default HomeScreen;
 
+const fakeLocation = {
+  latitude: 10.776889,
+  longitude: 106.700806,
+  latitudeDelta: 0.0922,
+  longitudeDelta: 0.0421,
+};
+
 const defaultLocation = {
   latitude: 10.771423,
   longitude: 106.698471,
 };
-
-const windowHeight = Dimensions.get('window').height;
-const windowWidth = Dimensions.get('window').width;
 
 const styles = StyleSheet.create({
   MainContainer: {
@@ -362,5 +321,15 @@ const styles = StyleSheet.create({
     color: '#6E6E6E',
     marginTop: responsiveSizeOS(4),
     lineHeight: responsiveSizeOS(20),
+  },
+  imgFake: {
+    width: responsiveSizeOS(40),
+    height: responsiveSizeOS(40),
+  },
+  btnFake: {
+    position: 'absolute',
+    bottom: 0,
+    marginBottom: responsiveSizeOS(16),
+    marginLeft: responsiveSizeOS(16),
   },
 });

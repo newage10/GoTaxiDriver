@@ -1,17 +1,84 @@
-import { FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import React from 'react';
+import { FlatList, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View, RefreshControl, TextInput, Alert } from 'react-native';
+import React, { useEffect, useState } from 'react';
 import { NavigationContext, useNavigation } from '@react-navigation/native';
 import Header from '~/components/Header';
 import Colors from '~/themes/colors';
-import { SCREEN_WIDTH, isEmptyObj, responsiveFontSizeOS, responsiveSizeOS } from '~/helper/GeneralMain';
+import { SCREEN_WIDTH, isEmptyObj, responsiveFontSizeOS, responsiveSizeOS, screenWidth } from '~/helper/GeneralMain';
 import LayoutView from '~/components/LayoutView';
 import { useAppDispatch, useAppSelector } from '~/configs/hooks';
 import FastImage from 'react-native-fast-image';
 import images from '~/themes/images';
+import { getDriverCars, getDriverInfo, updateDriverInfo } from '~/services/apiService';
+import { TextInputComponent } from '~/components/TextInputComponent';
 
 const AccInfoScreen = () => {
   const dispatch = useAppDispatch();
   const navigation = React.useContext(NavigationContext);
+  const [isSubmit, setCheckSubmit] = useState(true);
+  const [nameDriver, setNameDriver] = useState(null);
+  const [phoneDriver, setPhoneDriver] = useState(null);
+  const [emailDriver, setEmailDriver] = useState(null);
+  const driverId = useAppSelector((state) => state?.driver?.driverId ?? 10);
+
+  const handleSetData = (data, key) => {
+    switch (key) {
+      case accInfoDriver.nameDriver:
+        setNameDriver(data);
+        break;
+      case accInfoDriver.phoneDriver:
+        setPhoneDriver(data);
+        break;
+      case accInfoDriver.emailDriver:
+        setEmailDriver(data);
+        break;
+    }
+  };
+
+  const onRefreshLoading = () => {
+    fetchDriverData(driverId);
+  };
+
+  const fetchDriverData = async (driverId) => {
+    try {
+      const response = await getDriverInfo(driverId);
+      console.log('Test 2 response: ', JSON.stringify(response));
+      if (!isEmptyObj(response)) {
+        const { fullname, email, phoneNo } = response;
+        setNameDriver(fullname);
+        setEmailDriver(email);
+        setPhoneDriver(phoneNo);
+      }
+    } catch (error) {
+      console.error('Error fetching car types:', error.message);
+    }
+  };
+
+  const handleIpdateDriverInfo = async (driverId, reqData) => {
+    try {
+      const response = await updateDriverInfo(driverId, reqData);
+      console.log('Test 2 response: ', JSON.stringify(response));
+      Alert.alert('Thông báo', 'Cập nhật thông tin tài xế thành công');
+    } catch (error) {
+      console.error('Error update driver info', error.message);
+    }
+  };
+
+  const handleSubmit = () => {
+    const reqData = {
+      phoneNo: phoneDriver,
+      fullname: nameDriver,
+      email: emailDriver,
+    };
+    handleIpdateDriverInfo(driverId, reqData);
+  };
+
+  useEffect(() => {
+    fetchDriverData(driverId);
+  }, []);
+
+  useEffect(() => {
+    nameDriver && phoneDriver && emailDriver ? setCheckSubmit(true) : setCheckSubmit(false);
+  }, [nameDriver, phoneDriver, emailDriver]);
 
   const viewItem = (name, value, line = true, fWidthLeft = null, fWidthRight = null) => {
     return (
@@ -29,11 +96,55 @@ const AccInfoScreen = () => {
     <LayoutView>
       <Header barStyle="dark-content" title={'Thông tin tài khoản'} onPressLeft={() => navigation.goBack()} />
       <SafeAreaView style={styles.container}>
-        <View style={styles.viewContent}>
-          {viewItem('Họ tên ', 'Nguyễn Văn A', true)}
-          {viewItem('Số điện thoại', '0902123451', true)}
-          {viewItem('Email', 'nguyenvana@gmail.com', true)}
-        </View>
+        <ScrollView contentContainerStyle={styles.scrollView} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" refreshControl={<RefreshControl refreshing={false} onRefresh={onRefreshLoading} />}>
+          <View style={styles.viewContent}>
+            <TextInputComponent
+              textLabel="Họ tên"
+              textLabelStyle={styles.title}
+              labelContainerStyle={styles.viewTextOption}
+              value={nameDriver}
+              onChangeText={(e) => handleSetData(e, accInfoDriver.nameDriver)}
+              returnKeyType={'done'}
+              autoCorrect={false}
+              allowFontScaling={false}
+              keyboardType="default"
+              placeholder={'Nhập tên tài xế'}
+              viewStyle={styles.viewInputText}
+              setValue={setNameDriver}
+            />
+            <TextInputComponent
+              textLabel="Số điện thoại"
+              textLabelStyle={styles.title}
+              labelContainerStyle={styles.viewTextOption}
+              value={phoneDriver}
+              onChangeText={(e) => handleSetData(e, accInfoDriver.phoneDriver)}
+              returnKeyType={'done'}
+              autoCorrect={false}
+              allowFontScaling={false}
+              keyboardType="number-pad"
+              placeholder={'Nhập số điện thoại tài xế'}
+              viewStyle={styles.viewInputText}
+              setValue={setPhoneDriver}
+            />
+            <TextInputComponent
+              textLabel="Email"
+              textLabelStyle={styles.title}
+              labelContainerStyle={styles.viewTextOption}
+              value={emailDriver}
+              onChangeText={(e) => handleSetData(e, accInfoDriver.emailDriver)}
+              returnKeyType={'done'}
+              autoCorrect={false}
+              allowFontScaling={false}
+              keyboardType="email-address"
+              placeholder={'Nhập địa chỉ email tài xế'}
+              viewStyle={styles.viewInputText}
+              setValue={setEmailDriver}
+            />
+            <TouchableOpacity style={[styles.viewInputButton, !isSubmit ? styles.viewInputButton_Disabled : null]} disabled={!isSubmit} onPress={handleSubmit}>
+              <Text style={styles.txtSubmit}>XÁC NHẬN</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
       </SafeAreaView>
     </LayoutView>
   );
@@ -41,13 +152,17 @@ const AccInfoScreen = () => {
 
 export default AccInfoScreen;
 
-export const orderType = {
-  NEW: 1,
-  HISTORY: 2,
+const accInfoDriver = {
+  nameDriver: 'nameDriver',
+  phoneDriver: 'phoneDriver',
+  emailDriver: 'emailDriver',
 };
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  scrollView: {
     flex: 1,
   },
   viewContent: {
@@ -94,5 +209,42 @@ const styles = StyleSheet.create({
     borderWidth: responsiveSizeOS(0.7),
     borderStyle: 'dotted',
     borderRadius: responsiveSizeOS(1),
+  },
+
+  viewInputButton: {
+    bottom: 0,
+    position: 'absolute',
+    backgroundColor: Colors.btnSubmit,
+    borderRadius: responsiveSizeOS(15),
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: responsiveSizeOS(45),
+    width: screenWidth - responsiveSizeOS(45),
+    marginBottom: responsiveSizeOS(20),
+    alignSelf: 'center',
+    marginTop: responsiveSizeOS(20),
+  },
+  viewInputButton_Disabled: {
+    backgroundColor: Colors.bgGray,
+  },
+  txtSubmit: {
+    fontSize: responsiveFontSizeOS(16),
+    color: 'white',
+  },
+  title: {
+    fontSize: responsiveFontSizeOS(16),
+    fontWeight: '400',
+    color: '#818C9C',
+  },
+  viewTextOption: {
+    marginTop: responsiveSizeOS(12),
+    marginBottom: responsiveSizeOS(4),
+  },
+  viewInputText: {
+    fontSize: responsiveFontSizeOS(16),
+    color: 'rgb(11, 11, 11)',
+    marginLeft: responsiveSizeOS(8),
+    textAlign: 'left',
+    width: '85%',
   },
 });

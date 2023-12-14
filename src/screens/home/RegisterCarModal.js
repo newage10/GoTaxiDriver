@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Platform, RefreshControl, Alert } from 'react-native';
-import KeyboardSpacer from 'react-native-keyboard-spacer';
 import Modal from 'react-native-modal';
 import { HeaderPopup } from '~/components/HeaderPopup';
 import { isEmptyObj, responsiveFontSizeOS, responsiveSizeOS, screenWidth } from '~/helper/GeneralMain';
@@ -23,7 +22,6 @@ const RegisterCarModal = (props) => {
   const [selectedServiceType, setSelectedServiceType] = useState(null);
   const [isSubmit, setCheckSubmit] = useState(true);
   const [driverData, setDriverData] = useState(null);
-  console.log('Test driverData: ', JSON.stringify(driverData));
   const driverId = useAppSelector((state) => state?.driver?.driverId ?? 10);
 
   const handleClose = () => {
@@ -181,7 +179,7 @@ const RegisterCarModal = (props) => {
               returnKeyType={'done'}
               autoCorrect={false}
               allowFontScaling={false}
-              keyboardType="number-pad"
+              keyboardType="default"
               placeholder={'Nhập biển số xe'}
               viewStyle={styles.viewInputText}
               setValue={setLicensePlate}
@@ -196,7 +194,7 @@ const RegisterCarModal = (props) => {
               returnKeyType={'done'}
               autoCorrect={false}
               allowFontScaling={false}
-              keyboardType="number-pad"
+              keyboardType="default"
               placeholder={'Nhập tên xe'}
               viewStyle={styles.viewInputText}
               setValue={setLicensePlate}
@@ -232,7 +230,6 @@ const RegisterCarModal = (props) => {
             </TouchableOpacity>
           </ScrollView>
         </View>
-        {Platform.OS === 'ios' ? <KeyboardSpacer /> : null}
         {/* Modal cho Loại xe */}
         <ListDataModal modalVisible={carTypeVisible} toggleModalVisible={toggleCarTypeVisible} modalTitle="Chọn loại xe" infoData={carTypes} valueId={selectedCarType?.id ?? driverData?.carType} handleSelect={handleSelectCarType} />
 
@@ -345,7 +342,7 @@ const styles = StyleSheet.create({
     fontSize: responsiveFontSizeOS(16),
     paddingHorizontal: responsiveSizeOS(15),
     borderColor: 'rgb(203, 203, 203)',
-    borderRadius: responsiveSizeOS(15),
+    borderRadius: responsiveSizeOS(12),
     borderWidth: responsiveSizeOS(1),
     height: responsiveSizeOS(40),
   },
