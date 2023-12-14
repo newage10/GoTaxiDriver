@@ -27,6 +27,17 @@ apiService.interceptors.request.use(
   }
 );
 
+//Hàm login
+export const loginApp = async (loginData) => {
+  try {
+    const response = await apiService.post('/driver/login', loginData);
+    return response.data;
+  } catch (error) {
+    console.error('Error login car App:', error);
+    throw error;
+  }
+};
+
 //Hàm lấy loại xe
 export const getCarTypes = async () => {
   try {

@@ -13,6 +13,7 @@ import axios from 'axios';
 import { storeToken } from '~/configs/storageUtils';
 import { useAppDispatch } from '~/configs/hooks';
 import { setDriverId } from '~/redux/driver/actions';
+import { loginApp } from '~/services/apiService';
 
 const LoginScreen = () => {
   const dispatch = useAppDispatch();
@@ -25,15 +26,17 @@ const LoginScreen = () => {
   }, []);
 
   const handleLogin = async () => {
+    const resData = {
+      phoneNo: phoneNumber,
+      password: password,
+    };
     try {
-      const response = await axios.post(`${SERVER_URL}/v1/driver/login`, {
-        phoneNo: phoneNumber,
-        password: password,
-      });
+      const response = await loginApp(resData);
       console.log('Test 2 response: ', JSON.stringify(response));
-      const token = response.data.token;
-      const driverId = response.data.driverId ?? 10;
-      if (response.status === 200 && token && driverId) {
+      const token = response?.token;
+      const driverId = response?.data?.id ?? 10;
+      console.log('Test driverId: ', driverId);
+      if (token && driverId) {
         // Lưu token vào AsyncStorage
         await storeToken(token);
 
