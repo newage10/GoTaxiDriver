@@ -11,7 +11,7 @@ import { responsiveFontSizeOS, responsiveSizeOS } from '~/helper/GeneralMain';
 import { historyBookData } from '~/data';
 import SCREENS from '~/constant/screens';
 import SplashScreen from 'react-native-splash-screen';
-import HomeModal from './HomeModal';
+import RegisterCarModal from './RegisterCarModal';
 import useToggleState from '~/hooks/useToggleState';
 import Colors from '~/themes/colors';
 import { useDispatch } from 'react-redux';
@@ -136,7 +136,7 @@ const HomeScreen = () => {
             </TouchableOpacity>
           </View>
           <View style={styles.viewRightHeader}>
-            <TouchableOpacity style={styles.btnAcc} onPress={() => console.log('Test 200')}>
+            <TouchableOpacity style={styles.btnAcc} onPress={() => navigation.navigate(SCREENS.PROFILE_SCREEN)}>
               <FastImage source={images.icAcc} style={styles.imgAcc} resizeMode="contain" />
             </TouchableOpacity>
           </View>
@@ -146,7 +146,7 @@ const HomeScreen = () => {
   };
 
   const viewBottomSheet = () => {
-    return <HomeModal modalVisible={historyVisible} toggleModalVisible={toggleHistoryVisible} modalTitle={'Đăng ký thông tin Xe'} listDataModal={historyTrip} />;
+    return <RegisterCarModal modalVisible={historyVisible} toggleModalVisible={toggleHistoryVisible} modalTitle={'Đăng ký thông tin Xe'} />;
   };
 
   const handleSelect = (item) => () => {

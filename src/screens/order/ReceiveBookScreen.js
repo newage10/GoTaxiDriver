@@ -24,7 +24,7 @@ const ReceiveBookScreen = () => {
   console.log('Test 2 bookReceiveData: ', JSON.stringify(bookReceiveData));
   const isAvailable = useAppSelector((state) => state?.driver?.isAvailable ?? false);
   const driverId = useAppSelector((state) => state?.driver?.profile?.id ?? 10);
-  console.log('Test 2 isAvailable: ', isAvailable);
+  console.log('Test 2 isAvailable: ', isAvailable, isEmptyObj(bookReceiveData), JSON.stringify(bookReceiveData));
 
   const navigation = React.useContext(NavigationContext);
 
@@ -97,6 +97,7 @@ const ReceiveBookScreen = () => {
         <Text style={styles.txtReceiveInfo}>Thông tin chuyến </Text>
         <View style={styles.viewLine} />
         {viewItem('Tên khách hàng', 'Nguyễn Văn A', true)}
+        {viewItem('Điện thoại', '0902312211', true)}
         {viewItem('Điểm đón', 'Đường 3/2, Q.10', true)}
         {viewItem('Điểm đến', 'Dinh Độc Lập, Q.1', true)}
         {viewItem('Mức phí', amountBook, true)}
@@ -121,9 +122,12 @@ const ReceiveBookScreen = () => {
           <View style={styles.viewLine} />
           {viewReceiveBook()}
         </View>
-        <Footer disableShadown backgroundColor="white">
-          <TouchableOpacity style={[styles.viewInputButton, !isSubmit ? styles.viewInputButton_Disabled : null]} disabled={!isSubmit}>
-            <Text style={styles.txtSubmit}>BẮT ĐẦU</Text>
+        <Footer disableShadown backgroundColor="white" containerStyle={styles.viewButtonList}>
+          <TouchableOpacity style={[styles.viewInputButton, isEmptyObj(bookReceiveData) ? styles.viewInputButton_Disabled : null]} disabled={isEmptyObj(bookReceiveData)}>
+            <Text style={styles.txtSubmit}>TỪ CHỐI</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.viewInputButton, isEmptyObj(bookReceiveData) ? styles.viewInputButton_Disabled : null]} disabled={isEmptyObj(bookReceiveData)}>
+            <Text style={styles.txtSubmit}>XÁC NHẬN</Text>
           </TouchableOpacity>
         </Footer>
       </SafeAreaView>
@@ -205,8 +209,8 @@ const styles = StyleSheet.create({
     borderRadius: responsiveSizeOS(15),
     justifyContent: 'center',
     alignItems: 'center',
-    height: responsiveSizeOS(45),
-    width: SCREEN_WIDTH - responsiveSizeOS(30),
+    height: responsiveSizeOS(40),
+    width: responsiveSizeOS(150),
     marginBottom: responsiveSizeOS(12),
     alignSelf: 'center',
     marginTop: responsiveSizeOS(10),
@@ -320,5 +324,10 @@ const styles = StyleSheet.create({
     marginHorizontal: responsiveSizeOS(16),
     textAlign: 'center',
     marginBottom: responsiveSizeOS(16),
+  },
+  viewButtonList: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
   },
 });

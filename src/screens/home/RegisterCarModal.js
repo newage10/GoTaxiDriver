@@ -1,20 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Platform, RefreshControl, Alert } from 'react-native';
-import FastImage from 'react-native-fast-image';
 import KeyboardSpacer from 'react-native-keyboard-spacer';
 import Modal from 'react-native-modal';
 import { HeaderPopup } from '~/components/HeaderPopup';
-import images from '~/themes/images';
-import { responsiveFontSizeOS, responsiveSizeOS, screenWidth } from '~/helper/GeneralMain';
+import { isEmptyObj, responsiveFontSizeOS, responsiveSizeOS, screenWidth } from '~/helper/GeneralMain';
 import Colors from '~/themes/colors';
-import { getAllServices, getCarTypes, registerCar } from '~/services/apiService';
+import { getAllServices, getCarTypes, getDriverCars, registerCar } from '~/services/apiService';
 import { TextInputComponent } from '~/components/TextInputComponent';
 import ListDataModal from './ListDataModal';
 import useToggleState from '~/hooks/useToggleState';
 import { useAppSelector } from '~/configs/hooks';
 
-const HomeModal = (props) => {
-  const { modalVisible, toggleModalVisible, modalTitle, listDataModal } = props ?? {};
+const RegisterCarModal = (props) => {
+  const { modalVisible, toggleModalVisible, modalTitle } = props ?? {};
   const [carTypes, setCarTypes] = useState([]);
   const [servicesTypes, setServicesTypes] = useState([]);
   const [licensePlate, setLicensePlate] = useState(null);
@@ -24,11 +22,21 @@ const HomeModal = (props) => {
   const [serviceTypeVisible, toggleServiceTypeVisible] = useToggleState(false);
   const [selectedServiceType, setSelectedServiceType] = useState(null);
   const [isSubmit, setCheckSubmit] = useState(true);
+  const [driverData, setDriverData] = useState(null);
+  console.log('Test driverData: ', JSON.stringify(driverData));
   const driverId = useAppSelector((state) => state?.driver?.driverId ?? 10);
 
   const handleClose = () => {
     toggleModalVisible();
   };
+
+  useEffect(() => {
+    if (!isEmptyObj(driverData)) {
+      const { carName, licensePlate } = driverData ?? {};
+      setCarName(carName);
+      setLicensePlate(licensePlate);
+    }
+  }, [driverData]);
 
   const handleSetData = (data, key) => {
     switch (key) {
@@ -38,6 +46,16 @@ const HomeModal = (props) => {
       case registerDriver.carName:
         setCarName(data);
         break;
+    }
+  };
+
+  const fetchDriverData = async (driverId) => {
+    try {
+      const response = await getDriverCars(driverId);
+      console.log('Test 2 response: ', JSON.stringify(response));
+      setDriverData(response); // Lưu dữ liệu vào state
+    } catch (error) {
+      console.error('Error fetching car types:', error);
     }
   };
 
@@ -72,6 +90,16 @@ const HomeModal = (props) => {
     toggleServiceTypeVisible();
   };
 
+  const findCarType = (carArray, typeId) => {
+    const car = carArray.find((car) => car.id === typeId);
+    return car ? car.car_type : 'Chọn loại xe';
+  };
+
+  const findServiceName = (serviceArray, idToFind) => {
+    const service = serviceArray.find((service) => service.id === idToFind);
+    return service ? service.serviceName : 'Chọn dịch vụ';
+  };
+
   const handleSubmit = async () => {
     const carData = {
       driverId: driverId,
@@ -82,9 +110,34 @@ const HomeModal = (props) => {
     };
 
     try {
-      const response = await registerCar(carData);
-      console.log('Car registered successfully:', response);
-      Alert.alert('Thông báo', 'Đăng ký thông tin xe thành công');
+      console.log('Test 2 submit driverData: ', isEmptyObj(driverData), driverData);
+      if (isEmptyObj(driverData)) {
+        const response = await registerCar(carData);
+        console.log('Car registered successfully:', response);
+        Alert.alert(
+          'Thông báo',
+          'Đăng ký thông tin xe thành công',
+          [
+            {
+              text: 'Xác nhận',
+              onPress: () => handleClose,
+            },
+          ],
+          { cancelable: false }
+        );
+      } else {
+        Alert.alert(
+          'Thông báo',
+          'Cập nhật đăng ký xe thành công',
+          [
+            {
+              text: 'Xác nhận',
+              onPress: () => handleClose,
+            },
+          ],
+          { cancelable: false }
+        );
+      }
       // Xử lý thêm sau khi đăng ký thành công
     } catch (error) {
       console.error('Error registering car:', error);
@@ -93,9 +146,12 @@ const HomeModal = (props) => {
   };
 
   useEffect(() => {
-    fetchCarTypes();
-    fetchServices();
-  }, []);
+    if (modalVisible) {
+      fetchCarTypes();
+      fetchServices();
+      fetchDriverData(driverId);
+    }
+  }, [modalVisible]);
 
   useEffect(() => {
     if (driverId && selectedCarType?.id && selectedServiceType?.id && carName && carName) {
@@ -106,6 +162,8 @@ const HomeModal = (props) => {
   }, [selectedCarType, selectedServiceType, carName, carName, driverId]);
 
   const onRefreshLoading = () => {};
+
+  console.log('Test modal: ', selectedCarType?.id ?? driverData?.carType);
 
   return (
     <Modal propagateSwipe animationIn="slideInUp" animationOut="slideOutDown" isVisible={modalVisible} onBackdropPress={handleClose} style={styles.containerModal}>
@@ -148,7 +206,7 @@ const HomeModal = (props) => {
               <View style={styles.viewInputOneLeft}>
                 <View style={styles.viewInputItem}>
                   <Text style={styles.viewInputOneLeft_Text} numberOfLines={1} ellipsizeMode="tail">
-                    {selectedCarType?.car_type || 'Chọn loại xe'}
+                    {findCarType(carTypes, selectedCarType?.id ?? driverData?.carType) || 'Chọn loại xe'}
                   </Text>
                 </View>
               </View>
@@ -161,7 +219,7 @@ const HomeModal = (props) => {
               <View style={styles.viewInputOneLeft}>
                 <View style={styles.viewInputItem}>
                   <Text style={styles.viewInputOneLeft_Text} numberOfLines={1} ellipsizeMode="tail">
-                    {selectedServiceType?.serviceName || 'Chọn dịch vụ'}
+                    {findServiceName(servicesTypes, selectedServiceType?.id ?? driverData?.serviceId) || 'Chọn dịch vụ'}
                   </Text>
                 </View>
               </View>
@@ -176,16 +234,16 @@ const HomeModal = (props) => {
         </View>
         {Platform.OS === 'ios' ? <KeyboardSpacer /> : null}
         {/* Modal cho Loại xe */}
-        <ListDataModal modalVisible={carTypeVisible} toggleModalVisible={toggleCarTypeVisible} modalTitle="Chọn loại xe" infoData={carTypes} valueId={selectedCarType?.id} handleSelect={handleSelectCarType} />
+        <ListDataModal modalVisible={carTypeVisible} toggleModalVisible={toggleCarTypeVisible} modalTitle="Chọn loại xe" infoData={carTypes} valueId={selectedCarType?.id ?? driverData?.carType} handleSelect={handleSelectCarType} />
 
         {/* Modal cho ID Dịch vụ */}
-        <ListDataModal modalVisible={serviceTypeVisible} toggleModalVisible={toggleServiceTypeVisible} modalTitle="Chọn dịch vụ" infoData={servicesTypes} valueId={selectedServiceType?.id} handleSelect={handleSelectServiceType} />
+        <ListDataModal modalVisible={serviceTypeVisible} toggleModalVisible={toggleServiceTypeVisible} modalTitle="Chọn dịch vụ" infoData={servicesTypes} valueId={selectedServiceType?.id ?? driverData?.serviceId} handleSelect={handleSelectServiceType} />
       </View>
     </Modal>
   );
 };
 
-export default HomeModal;
+export default RegisterCarModal;
 
 const registerDriver = {
   licensePlate: 'licensePlate',

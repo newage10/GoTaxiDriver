@@ -8,33 +8,38 @@ import LayoutView from '~/components/LayoutView';
 import { useAppDispatch, useAppSelector } from '~/configs/hooks';
 import FastImage from 'react-native-fast-image';
 import images from '~/themes/images';
-import SCREENS from '~/constant/screens';
 
-const ProfileScreen = () => {
+const AccInfoScreen = () => {
   const dispatch = useAppDispatch();
   const navigation = React.useContext(NavigationContext);
 
+  const viewItem = (name, value, line = true, fWidthLeft = null, fWidthRight = null) => {
+    return (
+      <View>
+        <View style={styles.viewItem}>
+          <Text style={[styles.txtItemLeft, fWidthLeft]}>{name}</Text>
+          <Text style={[styles.txtItemRight, fWidthRight]}>{value}</Text>
+        </View>
+        {line ? <View style={styles.viewLine} /> : null}
+      </View>
+    );
+  };
+
   return (
     <LayoutView>
-      <Header barStyle="dark-content" title={'Tài khoản'} onPressLeft={() => navigation.goBack()} />
+      <Header barStyle="dark-content" title={'Thông tin tài khoản'} onPressLeft={() => navigation.goBack()} />
       <SafeAreaView style={styles.container}>
         <View style={styles.viewContent}>
-          <TouchableOpacity style={styles.viewItem} onPress={() => navigation.navigate(SCREENS.ACC_INFO_SCREEN)}>
-            <Text style={styles.txtItem}>Thông tin tài khoản</Text>
-            <FastImage source={images.iconNextTransparent} style={styles.imgNext} />
-          </TouchableOpacity>
-          <View style={styles.viewLine} />
-          <TouchableOpacity style={styles.viewItem}>
-            <Text style={styles.txtItem}>Đăng xuất</Text>
-            <FastImage source={images.iconNextTransparent} style={styles.imgNext} />
-          </TouchableOpacity>
+          {viewItem('Họ tên ', 'Nguyễn Văn A', true)}
+          {viewItem('Số điện thoại', '0902123451', true)}
+          {viewItem('Email', 'nguyenvana@gmail.com', true)}
         </View>
       </SafeAreaView>
     </LayoutView>
   );
 };
 
-export default ProfileScreen;
+export default AccInfoScreen;
 
 export const orderType = {
   NEW: 1,
@@ -68,11 +73,26 @@ const styles = StyleSheet.create({
     height: responsiveSizeOS(14),
     width: responsiveSizeOS(9),
   },
+  txtItemLeft: {
+    fontSize: responsiveFontSizeOS(15),
+    color: 'rgb(4, 4, 4)',
+    // fontFamily: Fonts.Regular,
+    width: '40%',
+    textAlign: 'left',
+  },
+  txtItemRight: {
+    fontSize: responsiveFontSizeOS(15),
+    color: 'rgb(4, 4, 4)',
+    // fontFamily: Fonts.Regular,
+    width: '60%',
+    textAlign: 'right',
+  },
   viewLine: {
-    height: responsiveSizeOS(1),
-    width: '110%',
-    backgroundColor: Colors.bgGrayT,
-    marginVertical: responsiveSizeOS(12),
-    marginHorizontal: responsiveSizeOS(-16),
+    borderColor: 'rgb(203, 203, 203)',
+    marginVertical: responsiveSizeOS(6),
+    // width: '100%',
+    borderWidth: responsiveSizeOS(0.7),
+    borderStyle: 'dotted',
+    borderRadius: responsiveSizeOS(1),
   },
 });

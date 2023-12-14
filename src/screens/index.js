@@ -10,6 +10,7 @@ import OrderScreen from './order/OrderScreen';
 import ProfileScreen from './profile/ProfileScreen';
 import BookingScreen from './booking/BookingScreen';
 import ReceiveBookScreen from './order/ReceiveBookScreen';
+import AccInfoScreen from './profile/AccInfoScreen';
 
 const Stack = createNativeStackNavigator();
 const stackOptions = { headerShown: false, keyboardHandlingEnabled: true, headerVisible: false, gesturesEnabled: true };
@@ -25,6 +26,7 @@ const ScreensContainer = () => {
         <Stack.Screen name={SCREENS.BOOKING_SCREEN} component={BookingScreen} />
         <Stack.Screen name={SCREENS.ORDER_SCREEN} component={OrderScreen} />
         <Stack.Screen name={SCREENS.RECEIVE_BOOK_SCREEN} component={ReceiveBookScreen} />
+        <Stack.Screen name={SCREENS.ACC_INFO_SCREEN} component={AccInfoScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

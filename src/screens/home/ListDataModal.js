@@ -39,8 +39,6 @@ const styles = StyleSheet.create({
     flex: 1,
     margin: 0,
     justifyContent: 'flex-end',
-    paddingHorizontal: responsiveSizeOS(8),
-    paddingBottom: responsiveSizeOS(40),
     backgroundColor: 'rgba(24, 26, 65, 0.6)',
   },
   modalView: {
@@ -48,7 +46,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: responsiveSizeOS(16),
     paddingBottom: responsiveSizeOS(16),
     backgroundColor: 'white',
-    borderRadius: responsiveSizeOS(20),
+    borderTopLeftRadius: responsiveSizeOS(20),
+    borderTopRightRadius: responsiveSizeOS(20),
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {
