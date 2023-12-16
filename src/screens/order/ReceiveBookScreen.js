@@ -33,7 +33,7 @@ const ReceiveBookScreen = () => {
   const handleAcceptRide = (driverId) => () => {
     socketService.acceptRide(driverId);
     console.log('Cuốc xe đã được chấp nhận:', driverId);
-    navigation.navigate(SCREENS.DRIVER_TRIP_SCREEN);
+    navigation.navigate(SCREENS.DRIVER_TRIP_SCREEN, { bookingId: bookReceiveData?.bookingInfo?.id });
   };
 
   const toggleAvailability = () => {
@@ -47,7 +47,6 @@ const ReceiveBookScreen = () => {
       socketService.listenForRideRequest((data) => {
         // Xử lý dữ liệu yêu cầu đi chuyến
         console.log('Ride request received:', data);
-        Alert.alert('Thông báo', JSON.stringify(data));
         setBookReceiveData(data ?? rideRequestData);
       });
     } else {
@@ -61,10 +60,10 @@ const ReceiveBookScreen = () => {
 
   useEffect(() => {
     // Cleanup function
-    return () => {
-      socketService.stopListeningForRideRequest();
-      socketService.disconnect();
-    };
+    // return () => {
+    //   socketService.stopListeningForRideRequest();
+    //   socketService.disconnect();
+    // };
   }, []);
 
   const viewItem = (name, value, line = true, fWidthLeft = null, fWidthRight = null) => {
@@ -106,18 +105,19 @@ const ReceiveBookScreen = () => {
     <LayoutView>
       <Header barStyle="dark-content" title={'Thông tin chuyến'} onPressLeft={() => navigation.goBack()} />
       <SafeAreaView style={styles.container}>
-        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" refreshControl={<RefreshControl refreshing={false} onRefresh={onRefreshLoading} />}>
-          <View style={styles.viewContent}>
-            <View style={styles.viewReceiveBook}>
-              <Text style={styles.txtReceiveBook}>Nhận chuyến</Text>
-              <TouchableOpacity style={styles.btnReceiveBook} onPress={toggleAvailability}>
-                <FastImage source={isAvailable ? images.icSwitchOn : images.icSwitchOff} style={styles.imgReceiveBook} resizeMode="contain" />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.viewLine} />
-            {viewReceiveBook()}
+        <View style={styles.viewContent}>
+          <View style={styles.viewReceiveBook}>
+            <Text style={styles.txtReceiveBook}>Nhận chuyến</Text>
+            <TouchableOpacity style={styles.btnReceiveBook} onPress={toggleAvailability}>
+              <FastImage source={isAvailable ? images.icSwitchOn : images.icSwitchOff} style={styles.imgReceiveBook} resizeMode="contain" />
+            </TouchableOpacity>
           </View>
-        </ScrollView>
+          <View style={styles.viewLine} />
+          <ScrollView contentContainerStyle={styles.scrollView} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" refreshControl={<RefreshControl refreshing={false} onRefresh={onRefreshLoading} />}>
+            {viewReceiveBook()}
+          </ScrollView>
+        </View>
+
         <Footer disableShadown backgroundColor="white" containerStyle={styles.viewButtonList}>
           <TouchableOpacity style={[styles.viewInputButton, isEmptyObj(bookReceiveData) ? styles.viewInputButton_Disabled : null]} disabled={isEmptyObj(bookReceiveData)} onPress={handleRejectRide(driverId)}>
             <Text style={styles.txtSubmit}>TỪ CHỐI</Text>
@@ -303,6 +303,12 @@ const styles = StyleSheet.create({
     // fontFamily: Fonts.Regular,
     width: '60%',
     textAlign: 'right',
+  },
+  viewReceiveRide: {
+    flex: 1,
+    // justifyContent: 'center', // Center the content vertically
+    // alignItems: 'center', // Center the content horizontally
+    // backgroundColor: 'white',
   },
   viewLine: {
     borderColor: 'rgb(203, 203, 203)',
