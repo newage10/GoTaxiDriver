@@ -1,4 +1,4 @@
-import { FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { NavigationContext, useNavigation } from '@react-navigation/native';
 import { Footer } from '~/components/Footer';
@@ -14,14 +14,13 @@ import { getCurrentLocation } from '~/redux/map/actions';
 import socketService from '~/services/socketService';
 import { setDriverAvailability } from '~/redux/driver/actions';
 import { rideRequestData } from '~/data';
+import SCREENS from '~/constant/screens';
 
 const ReceiveBookScreen = () => {
   const dispatch = useAppDispatch();
   const [bookReceiveData, setBookReceiveData] = useState(null);
-  console.log('Test 2 bookReceiveData: ', JSON.stringify(bookReceiveData));
   const isAvailable = useAppSelector((state) => state?.driver?.isAvailable ?? false);
-  const driverId = useAppSelector((state) => state?.driver?.profile?.id ?? 10);
-  console.log('Test 2 isAvailable: ', isAvailable, isEmptyObj(bookReceiveData), JSON.stringify(bookReceiveData));
+  const driverId = useAppSelector((state) => state?.driver?.driverId ?? 10);
 
   const navigation = React.useContext(NavigationContext);
 
@@ -35,6 +34,7 @@ const ReceiveBookScreen = () => {
   const handleAcceptRide = (driverId) => () => {
     socketService.acceptRide(driverId);
     console.log('Cuốc xe đã được chấp nhận:', driverId);
+    navigation.navigate(SCREENS.DRIVER_TRIP_SCREEN);
   };
 
   const toggleAvailability = () => {
@@ -48,6 +48,7 @@ const ReceiveBookScreen = () => {
       socketService.listenForRideRequest((data) => {
         // Xử lý dữ liệu yêu cầu đi chuyến
         console.log('Ride request received:', data);
+        Alert.alert('Thông báo', JSON.stringify(data));
         setBookReceiveData(data ?? rideRequestData);
       });
     } else {
@@ -63,13 +64,13 @@ const ReceiveBookScreen = () => {
     Geolocation.getCurrentPosition(
       (position) => {
         console.log('Test 2 position receive: ', JSON.stringify(position));
-        // Dispatch vị trí hiện tại vào Redux store
-        dispatch(getCurrentLocation(position));
         // Gửi vị trí hiện tại đến server thông qua Socket.io
         socketService.updateLocation(driverId, {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
         });
+        // Dispatch vị trí hiện tại vào Redux store
+        dispatch(getCurrentLocation(position));
       },
       (error) => {
         console.error(error);
@@ -134,7 +135,7 @@ const ReceiveBookScreen = () => {
           <TouchableOpacity style={[styles.viewInputButton, isEmptyObj(bookReceiveData) ? styles.viewInputButton_Disabled : null]} disabled={isEmptyObj(bookReceiveData)} onPress={handleRejectRide(driverId)}>
             <Text style={styles.txtSubmit}>TỪ CHỐI</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.viewInputButton, isEmptyObj(bookReceiveData) ? styles.viewInputButton_Disabled : null]} disabled={isEmptyObj(bookReceiveData)} onPress={handleAcceptRide(driverId)}>
+          <TouchableOpacity style={[styles.viewInputButton, isEmptyObj(bookReceiveData) ? styles.viewInputButton_Disabled : null]} disabled={!isEmptyObj(bookReceiveData)} onPress={handleAcceptRide(driverId)}>
             <Text style={styles.txtSubmit}>XÁC NHẬN</Text>
           </TouchableOpacity>
         </Footer>

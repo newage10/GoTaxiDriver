@@ -359,3 +359,109 @@ export const rideRequestData = {
     },
   },
 };
+
+export const tripLocations = [
+  {
+    name: 'pickupLocation',
+    description: 'Independence Palace, Phường Bến Thành, Quận 1, Thành phố Hồ Chí Minh, Vietnam',
+    coordinates: { lat: 10.776971236794123, lng: 106.69527970643165 },
+    roundedCoordinates: { lat: 10.777, lng: 106.6953 },
+  },
+  {
+    name: '0m',
+    coordinates: { lat: 10.778235986816783, lng: 106.6964384187876 },
+    roundedCoordinates: { lat: 10.77824, lng: 106.69646 },
+  },
+  {
+    name: '50m',
+    coordinates: { lat: 10.777925337944684, lng: 106.69679655774607 },
+    roundedCoordinates: { lat: 10.77791, lng: 106.69678 },
+  },
+  {
+    name: '100m',
+    coordinates: { lat: 10.777629850074991, lng: 106.69716899602315 },
+    roundedCoordinates: { lat: 10.77763, lng: 106.69717 },
+  },
+  {
+    name: '150m',
+    coordinates: { lat: 10.777283082860533, lng: 106.69746094401667 },
+    roundedCoordinates: { lat: 10.77728, lng: 106.69746 },
+  },
+  {
+    name: '200m',
+    coordinates: { lat: 10.777044848363445, lng: 106.69779102725833 },
+    roundedCoordinates: { lat: 10.77704, lng: 106.69779 },
+  },
+  {
+    name: '250m',
+    coordinates: { lat: 10.776725149775196, lng: 106.69818700491521 },
+    roundedCoordinates: { lat: 10.77673, lng: 106.69819 },
+  },
+  {
+    name: '300m',
+    coordinates: { lat: 10.776378367283224, lng: 106.69842654239027 },
+    roundedCoordinates: { lat: 10.77638, lng: 106.69843 },
+  },
+  {
+    name: '350m',
+    coordinates: { lat: 10.77621735929206, lng: 106.69866608132655 },
+    roundedCoordinates: { lat: 10.77622, lng: 106.69867 },
+  },
+  {
+    name: '400m',
+    description: 'Rẽ trái vào Lý Tự Trọng',
+    coordinates: { lat: 10.775833418831434, lng: 106.69901908499013 },
+    roundedCoordinates: { lat: 10.77583, lng: 106.69902 },
+  },
+  {
+    name: '450m',
+    coordinates: { lat: 10.77610588387671, lng: 106.69938470234109 },
+    roundedCoordinates: { lat: 10.77611, lng: 106.69938 },
+  },
+  {
+    name: '500m',
+    coordinates: { lat: 10.776328809901562, lng: 106.69966206829807 },
+    roundedCoordinates: { lat: 10.77633, lng: 106.69966 },
+  },
+  {
+    name: '550m',
+    coordinates: { lat: 10.776727213423657, lng: 106.69993080067758 },
+    roundedCoordinates: { lat: 10.77673, lng: 106.69993 },
+  },
+  {
+    name: '600m',
+    coordinates: { lat: 10.7770494791525, lng: 106.70022751221042 },
+    roundedCoordinates: { lat: 10.77705, lng: 106.70023 },
+  },
+  {
+    name: '650m',
+    coordinates: { lat: 10.7773799558926, lng: 106.70054929985741 },
+    roundedCoordinates: { lat: 10.77738, lng: 106.70055 },
+  },
+  {
+    name: '700m',
+    coordinates: { lat: 10.7773799558926, lng: 106.70054929985741 },
+    roundedCoordinates: { lat: 10.77771, lng: 106.70088 },
+  },
+  {
+    name: '750m',
+    coordinates: { lat: 10.778069289809336, lng: 106.701167611318 },
+    roundedCoordinates: { lat: 10.77807, lng: 106.70117 },
+  },
+  {
+    name: '800m',
+    coordinates: { lat: 10.778393076664422, lng: 106.70148981819081 },
+    roundedCoordinates: { lat: 10.77839, lng: 106.70149 },
+  },
+  {
+    name: '850m',
+    coordinates: { lat: 10.778722048174899, lng: 106.7017392521749 },
+    roundedCoordinates: { lat: 10.77872, lng: 106.70174 },
+  },
+  {
+    name: 'Destination',
+    description: 'Vincom Center, 72 Đ. Lê Thánh Tôn, Bến Nghé, Quận 1, Thành phố Hồ Chí Minh, Vietnam',
+    coordinates: { lat: 10.778436516531427, lng: 106.70205894209676 },
+    roundedCoordinates: { lat: 10.77844, lng: 106.70206 },
+  },
+];

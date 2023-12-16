@@ -52,18 +52,17 @@ const socketService = {
 
   // Gửi cập nhật vị trí tài xế lên server
   updateLocation(driverId, locationData) {
-    if (this.isConnected()) {
-      const locationPayload = {
-        id: driverId,
-        status: 'available',
-        location: {
-          type: 'Point',
-          coordinates: [locationData.longitude, locationData.latitude],
-        },
-      };
+    console.log('Test socket updateLocation: ', driverId, this.isConnected(), JSON.stringify(locationData));
+    const locationPayload = {
+      id: driverId,
+      status: 'available',
+      location: {
+        type: 'Point',
+        coordinates: [locationData.longitude, locationData.latitude],
+      },
+    };
 
-      socket.emit('driver_connect', locationPayload);
-    }
+    socket.emit('driver_connect', locationPayload);
   },
   // Tài xế chấp nhận cuốc xe
   acceptRide(driverId) {

@@ -21,7 +21,8 @@ const BackgroundFetchService = () => {
           const currentState = store.getState();
           const currentPosition = currentState?.map?.currentLocation;
           const isDriverAvailable = currentState?.driver?.isAvailable ?? false;
-          const driverId = currentState?.driver?.profile?.id ?? 10;
+          const driverId = currentState?.driver?.driverId ?? 10;
+          console.log('Test driverId background: ', driverId);
 
           if (isDriverAvailable) {
             // Kết nối với Socket.IO nếu chưa kết nối
