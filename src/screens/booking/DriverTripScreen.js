@@ -35,7 +35,7 @@ const DriverTripScreen = (props) => {
   const handleCompleteRide = () => {
     socketService.driverCompletedRide(bookingId, driverId);
     socketService.disconnectRide(driverId);
-    navigation.navigate(SCREENS.DRIVER_TRIP_SCREEN);
+    navigation.navigate(SCREENS.RECEIVE_BOOK_SCREEN);
   };
 
   useEffect(() => {
@@ -87,7 +87,7 @@ const DriverTripScreen = (props) => {
       // Nếu đang trên chặn 2 (đưa khách đến điểm đến)
       if (currentTripIndex === tripLocations.length - 1) {
         // Đã hoàn thành chuyến đi
-        Alert.alert('Thông báo', 'Đã hoàn thành chuyến đi', [{ text: 'OK', onPress: handleCompleteRide }]);
+        Alert.alert('Thông báo', 'Đã hoàn thành chuyến đi', [{ text: 'Xác nhận', onPress: handleCompleteRide }]);
         sendDriverLocation(); // Gửi vị trí cuối cùng khi hoàn thành chuyến đi
       } else {
         // Tiếp tục chặn 2
