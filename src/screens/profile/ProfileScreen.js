@@ -55,11 +55,6 @@ const ProfileScreen = () => {
 
 export default ProfileScreen;
 
-export const orderType = {
-  NEW: 1,
-  HISTORY: 2,
-};
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

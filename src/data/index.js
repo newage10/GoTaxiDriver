@@ -465,3 +465,65 @@ export const tripLocations = [
     roundedCoordinates: { lat: 10.77844, lng: 106.70206 },
   },
 ];
+
+export const fakeLocation = {
+  latitude: 10.776889,
+  longitude: 106.700806,
+  latitudeDelta: 0.0922,
+  longitudeDelta: 0.0421,
+};
+
+const tripDriverLocations = [
+  {
+    name: 'Start',
+    description: 'Chợ Bến Thành',
+    coordinates: { lat: 10.776889, lng: 106.700806 },
+    roundedCoordinates: { lat: 10.77689, lng: 106.70081 },
+  },
+  {
+    name: '1',
+    coordinates: { lat: 10.773215, lng: 106.697594 },
+    roundedCoordinates: { lat: 10.77322, lng: 106.69759 },
+  },
+  {
+    name: '2',
+    coordinates: { lat: 10.77366, lng: 106.697335 },
+    roundedCoordinates: { lat: 10.77366, lng: 106.69734 },
+  },
+  {
+    name: '3',
+    coordinates: { lat: 10.773961, lng: 106.697144 },
+    roundedCoordinates: { lat: 10.77396, lng: 106.69714 },
+  },
+  {
+    name: '4',
+    coordinates: { lat: 10.774644, lng: 106.696418 },
+    roundedCoordinates: { lat: 10.77464, lng: 106.69642 },
+  },
+  {
+    name: '5',
+    coordinates: { lat: 10.774827, lng: 106.696219 },
+    roundedCoordinates: { lat: 10.77483, lng: 106.69622 },
+  },
+  {
+    name: '6',
+    coordinates: { lat: 10.774765, lng: 106.696108 },
+    roundedCoordinates: { lat: 10.77477, lng: 106.69611 },
+  },
+  {
+    name: '7',
+    coordinates: { lat: 10.774985, lng: 106.69584 },
+    roundedCoordinates: { lat: 10.77499, lng: 106.69584 },
+  },
+  {
+    name: '8',
+    coordinates: { lat: 10.77586, lng: 106.694877 },
+    roundedCoordinates: { lat: 10.77586, lng: 106.69488 },
+  },
+  {
+    name: 'pickupLocation',
+    description: 'Dinh Độc Lập, Phường Bến Thành, Quận 1, Thành phố Hồ Chí Minh, Vietnam',
+    coordinates: { lat: 10.776971236794123, lng: 106.69527970643165 },
+    roundedCoordinates: { lat: 10.777, lng: 106.6953 },
+  },
+];

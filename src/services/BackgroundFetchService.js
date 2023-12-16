@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import BackgroundFetch from 'react-native-background-fetch';
 import { store } from '~/configs/store.config';
 import socketService from './socketService';
-// Đường dẫn tới Redux store
+import { fakeLocation } from '~/data';
 
 const BackgroundFetchService = () => {
   useEffect(() => {
@@ -10,7 +10,7 @@ const BackgroundFetchService = () => {
       console.log('Đang cấu hình BackgroundFetch...');
       BackgroundFetch.configure(
         {
-          minimumFetchInterval: 1, // Khoảng thời gian fetch tối thiểu là 15 phút
+          minimumFetchInterval: 1, // Khoảng thời gian fetch tối thiểu là 1 phút
           stopOnTerminate: false,
           startOnBoot: true,
         },
@@ -19,7 +19,7 @@ const BackgroundFetchService = () => {
 
           // Lấy trạng thái hiện tại từ Redux store
           const currentState = store.getState();
-          const currentPosition = currentState?.map?.currentLocation;
+          const currentPosition = currentState?.map?.currentLocation ?? fakeLocation;
           const isDriverAvailable = currentState?.driver?.isAvailable ?? false;
           const driverId = currentState?.driver?.driverId ?? 10;
           console.log('Test driverId background: ', driverId);
@@ -36,14 +36,13 @@ const BackgroundFetchService = () => {
                 'Test 2 background position:',
                 driverId,
                 JSON.stringify({
-                  latitude: currentPosition.coords.latitude,
-                  longitude: currentPosition.coords.longitude,
+                  latitude: currentPosition?.latitude,
+                  longitude: currentPosition?.longitude,
                 })
               );
-              // socketService.updateLocation(currentPosition.coords);
               socketService.updateLocation(driverId, {
-                latitude: currentPosition.coords.latitude,
-                longitude: currentPosition.coords.longitude,
+                latitude: currentPosition?.latitude,
+                longitude: currentPosition?.longitude,
               });
             }
           } else {

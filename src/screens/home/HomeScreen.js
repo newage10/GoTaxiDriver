@@ -8,13 +8,14 @@ import { NavigationContext, useNavigation } from '@react-navigation/native';
 import { PermissionsLocation, searchType } from '~/constant/content';
 import images from '~/themes/images';
 import { responsiveFontSizeOS, responsiveSizeOS } from '~/helper/GeneralMain';
-import { historyBookData } from '~/data';
 import SCREENS from '~/constant/screens';
 import SplashScreen from 'react-native-splash-screen';
 import RegisterCarModal from './RegisterCarModal';
 import useToggleState from '~/hooks/useToggleState';
 import Colors from '~/themes/colors';
 import { useDispatch } from 'react-redux';
+import { setCurrentLocation } from '~/redux/map/actions';
+import { fakeLocation } from '~/data';
 
 const HomeScreen = () => {
   const dispatch = useDispatch();
@@ -77,12 +78,14 @@ const HomeScreen = () => {
     Geolocation.getCurrentPosition(
       (info) => {
         console.log('Vị trí thực: ', info);
-        setCurrentPosition({
+        const currentPosition = {
           latitude: info?.coords?.latitude,
           longitude: info?.coords?.longitude,
           latitudeDelta: 0.0922,
           longitudeDelta: 0.0421,
-        });
+        };
+        setCurrentPosition(currentPosition);
+        dispatch(setCurrentLocation(currentPosition));
       },
       (error) => {
         console.error('Lỗi lấy vị trí: ', error);
@@ -102,6 +105,7 @@ const HomeScreen = () => {
   useEffect(() => {
     if (useFakeLocation) {
       setCurrentPosition(fakeLocation); // Sử dụng vị trí giả
+      dispatch(setCurrentLocation(fakeLocation));
     } else {
       getCurrentLocation(); // Lấy vị trí thực
     }
@@ -156,18 +160,6 @@ const HomeScreen = () => {
 };
 
 export default HomeScreen;
-
-const fakeLocation = {
-  latitude: 10.776889,
-  longitude: 106.700806,
-  latitudeDelta: 0.0922,
-  longitudeDelta: 0.0421,
-};
-
-const defaultLocation = {
-  latitude: 10.771423,
-  longitude: 106.698471,
-};
 
 const styles = StyleSheet.create({
   MainContainer: {

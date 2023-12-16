@@ -1,19 +1,17 @@
-import { Alert, FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, RefreshControl, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { NavigationContext, useNavigation } from '@react-navigation/native';
 import { Footer } from '~/components/Footer';
 import Header from '~/components/Header';
 import Colors from '~/themes/colors';
-import { SCREEN_WIDTH, isEmptyObj, responsiveFontSizeOS, responsiveSizeOS } from '~/helper/GeneralMain';
+import { SCREEN_WIDTH, formatMoneyNumber, isEmptyObj, responsiveFontSizeOS, responsiveSizeOS } from '~/helper/GeneralMain';
 import LayoutView from '~/components/LayoutView';
 import FastImage from 'react-native-fast-image';
 import images from '~/themes/images';
-import Geolocation from '@react-native-community/geolocation';
 import { useAppDispatch, useAppSelector } from '~/configs/hooks';
-import { getCurrentLocation } from '~/redux/map/actions';
 import socketService from '~/services/socketService';
 import { setDriverAvailability } from '~/redux/driver/actions';
-import { rideRequestData } from '~/data';
+import { fakeLocation, rideRequestData } from '~/data';
 import SCREENS from '~/constant/screens';
 
 const ReceiveBookScreen = () => {
@@ -21,12 +19,13 @@ const ReceiveBookScreen = () => {
   const [bookReceiveData, setBookReceiveData] = useState(null);
   const isAvailable = useAppSelector((state) => state?.driver?.isAvailable ?? false);
   const driverId = useAppSelector((state) => state?.driver?.driverId ?? 10);
+  const currentPosition = useAppSelector((state) => state?.map?.currentLocation ?? fakeLocation);
 
   const navigation = React.useContext(NavigationContext);
 
   // Hàm từ chối cuốc xe
   const handleRejectRide = (driverId) => () => {
-    socketService.emit('driver_rejected', { driverId });
+    socketService.rejectRide(driverId);
     console.log('Tài xế từ chối cuốc xe:', driverId);
   };
 
@@ -43,8 +42,8 @@ const ReceiveBookScreen = () => {
     if (newAvailability) {
       console.log('Test 2 isAvailable: ', newAvailability);
       // Tài xế bây giờ sẵn sàng nhận chuyến, gửi vị trí hiện tại
-      getCurrentLocationMap();
       socketService.connect(); // Mở kết nối Socket.IO
+      socketService.updateLocation(driverId, currentPosition);
       socketService.listenForRideRequest((data) => {
         // Xử lý dữ liệu yêu cầu đi chuyến
         console.log('Ride request received:', data);
@@ -58,26 +57,7 @@ const ReceiveBookScreen = () => {
     }
   };
 
-  const getCurrentLocationMap = useCallback(() => {
-    console.log('Test 2 isAvailable getCurrentLocationMap: ', isAvailable);
-    // Chỉ lấy vị trí khi tài xế sẵn sàng nhận chuyến
-    Geolocation.getCurrentPosition(
-      (position) => {
-        console.log('Test 2 position receive: ', JSON.stringify(position));
-        // Gửi vị trí hiện tại đến server thông qua Socket.io
-        socketService.updateLocation(driverId, {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        });
-        // Dispatch vị trí hiện tại vào Redux store
-        dispatch(getCurrentLocation(position));
-      },
-      (error) => {
-        console.error(error);
-      },
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
-    );
-  }, [dispatch, isAvailable]);
+  const onRefreshLoading = () => {};
 
   useEffect(() => {
     // Cleanup function
@@ -100,20 +80,25 @@ const ReceiveBookScreen = () => {
   };
 
   const viewReceiveBook = () => {
-    const { customerName, pickupLocationName, destinationName, amountBook, paymentName, paymentStatus, noteBook } = bookReceiveData ?? {};
-    return (
+    const { Customer, pickupLocation, destination, Bill, paymentName, paymentStatus, noteBook } = bookReceiveData?.bookingInfo ?? {};
+    console.log('Test bookReceiveData: ', JSON.stringify(bookReceiveData));
+    return isAvailable && !isEmptyObj(bookReceiveData) ? (
       <>
         <Text style={styles.txtReceiveInfo}>Thông tin chuyến </Text>
         <View style={styles.viewLine} />
-        {viewItem('Tên khách hàng', 'Nguyễn Văn A', true)}
-        {viewItem('Điện thoại', '0902312211', true)}
-        {viewItem('Điểm đón', 'Đường 3/2, Q.10', true)}
-        {viewItem('Điểm đến', 'Dinh Độc Lập, Q.1', true)}
-        {viewItem('Mức phí', amountBook, true)}
-        {viewItem('Phương thức thanh toán', paymentName, true)}
-        {viewItem('Trạng thái thanh toán', paymentStatus, true)}
-        {viewItem('Tin nhắn KH', noteBook, true)}
+        {viewItem('Tên khách hàng', Customer?.fullname, true)}
+        {viewItem('Điện thoại', Customer?.phoneNo, true)}
+        {viewItem('Điểm đón', pickupLocation?.locationName, true)}
+        {viewItem('Điểm đến', destination?.locationName, true)}
+        {viewItem('Mức phí', `${formatMoneyNumber(Bill?.sum)} VNĐ`, true)}
+        {viewItem('Phương thức thanh toán', 'Tiền mặt', true)}
+        {viewItem('Trạng thái thanh toán', BillTypes[Bill?.status], true)}
+        {viewItem('Tin nhắn KH', noteBook ?? 'Gọi điện khi tới', true)}
       </>
+    ) : (
+      <View style={styles.viewNotFound}>
+        <FastImage source={images.imgNotFound} style={styles.imgNotFound} />
+      </View>
     );
   };
 
@@ -121,21 +106,23 @@ const ReceiveBookScreen = () => {
     <LayoutView>
       <Header barStyle="dark-content" title={'Thông tin chuyến'} onPressLeft={() => navigation.goBack()} />
       <SafeAreaView style={styles.container}>
-        <View style={styles.viewContent}>
-          <View style={styles.viewReceiveBook}>
-            <Text style={styles.txtReceiveBook}>Nhận chuyến</Text>
-            <TouchableOpacity style={styles.btnReceiveBook} onPress={toggleAvailability}>
-              <FastImage source={isAvailable ? images.icSwitchOn : images.icSwitchOff} style={styles.imgReceiveBook} resizeMode="contain" />
-            </TouchableOpacity>
+        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" refreshControl={<RefreshControl refreshing={false} onRefresh={onRefreshLoading} />}>
+          <View style={styles.viewContent}>
+            <View style={styles.viewReceiveBook}>
+              <Text style={styles.txtReceiveBook}>Nhận chuyến</Text>
+              <TouchableOpacity style={styles.btnReceiveBook} onPress={toggleAvailability}>
+                <FastImage source={isAvailable ? images.icSwitchOn : images.icSwitchOff} style={styles.imgReceiveBook} resizeMode="contain" />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.viewLine} />
+            {viewReceiveBook()}
           </View>
-          <View style={styles.viewLine} />
-          {viewReceiveBook()}
-        </View>
+        </ScrollView>
         <Footer disableShadown backgroundColor="white" containerStyle={styles.viewButtonList}>
           <TouchableOpacity style={[styles.viewInputButton, isEmptyObj(bookReceiveData) ? styles.viewInputButton_Disabled : null]} disabled={isEmptyObj(bookReceiveData)} onPress={handleRejectRide(driverId)}>
             <Text style={styles.txtSubmit}>TỪ CHỐI</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.viewInputButton, isEmptyObj(bookReceiveData) ? styles.viewInputButton_Disabled : null]} disabled={!isEmptyObj(bookReceiveData)} onPress={handleAcceptRide(driverId)}>
+          <TouchableOpacity style={[styles.viewInputButton, isEmptyObj(bookReceiveData) ? styles.viewInputButton_Disabled : null]} disabled={isEmptyObj(bookReceiveData)} onPress={handleAcceptRide(driverId)}>
             <Text style={styles.txtSubmit}>XÁC NHẬN</Text>
           </TouchableOpacity>
         </Footer>
@@ -146,9 +133,9 @@ const ReceiveBookScreen = () => {
 
 export default ReceiveBookScreen;
 
-export const orderType = {
-  NEW: 1,
-  HISTORY: 2,
+const BillTypes = {
+  1: 'Chưa thanh toán',
+  2: 'Đã thanh toán',
 };
 
 const styles = StyleSheet.create({
@@ -338,5 +325,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-evenly',
     alignItems: 'center',
+  },
+  viewNotFound: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  imgNotFound: {
+    width: '80%',
+    height: '50%',
   },
 });

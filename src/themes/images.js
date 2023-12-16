@@ -27,6 +27,7 @@ const images = {
   icRadioEmpty: require('./images/icRadioEmpty.png'),
   iconNextTransparent: require('./images/iconNextTransparent.png'),
   iconPopupClose: require('./images/popup_bnt_close.png'),
+  imgNotFound: require('./images/imgNotFound.png'),
 };
 
 export default images;

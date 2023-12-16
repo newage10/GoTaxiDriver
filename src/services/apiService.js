@@ -173,7 +173,23 @@ export const logoutApp = async () => {
 
     // Kiểm tra xem có phản hồi từ server không và có thông báo lỗi không
     if (error?.response?.data) {
-      errorMessage = error?.response?.data;
+      errorMessage = error.response.data.message || error.response.data;
+    }
+
+    return Alert.alert('Thông báo', errorMessage);
+  }
+};
+
+export const updateCarInfo = async (carId, carData) => {
+  try {
+    const response = await apiService.put(`/car/driverid/${carId}`, carData);
+    return response.data;
+  } catch (error) {
+    let errorMessage = 'Đã xảy ra lỗi. Vui lòng thử lại';
+
+    // Kiểm tra xem có phản hồi từ server không và có thông báo lỗi không
+    if (error?.response?.data) {
+      errorMessage = error.response.data.message || error.response.data;
     }
 
     return Alert.alert('Thông báo', errorMessage);

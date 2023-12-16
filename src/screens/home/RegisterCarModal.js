@@ -4,7 +4,7 @@ import Modal from 'react-native-modal';
 import { HeaderPopup } from '~/components/HeaderPopup';
 import { isEmptyObj, responsiveFontSizeOS, responsiveSizeOS, screenWidth } from '~/helper/GeneralMain';
 import Colors from '~/themes/colors';
-import { getAllServices, getCarTypes, getDriverCars, registerCar } from '~/services/apiService';
+import { getAllServices, getCarTypes, getDriverCars, registerCar, updateCarInfo } from '~/services/apiService';
 import { TextInputComponent } from '~/components/TextInputComponent';
 import ListDataModal from './ListDataModal';
 import useToggleState from '~/hooks/useToggleState';
@@ -99,6 +99,8 @@ const RegisterCarModal = (props) => {
   };
 
   const handleSubmit = async () => {
+    console.log('Test modal selectedCarType: ', selectedCarType?.id);
+    console.log('Test modal selectedServiceType: ', selectedServiceType?.id);
     const carData = {
       driverId: driverId,
       carType: selectedCarType.id,
@@ -118,23 +120,27 @@ const RegisterCarModal = (props) => {
           [
             {
               text: 'Xác nhận',
-              onPress: () => handleClose,
+              onPress: handleClose,
             },
           ],
           { cancelable: false }
         );
       } else {
-        Alert.alert(
-          'Thông báo',
-          'Cập nhật đăng ký xe thành công',
-          [
-            {
-              text: 'Xác nhận',
-              onPress: () => handleClose,
-            },
-          ],
-          { cancelable: false }
-        );
+        const response = await updateCarInfo(driverId, carData);
+        console.log('Test 100 cap nhat: ', JSON.stringify(response));
+        if (response?.id) {
+          Alert.alert(
+            'Thông báo',
+            'Cập nhật đăng ký xe thành công',
+            [
+              {
+                text: 'Xác nhận',
+                onPress: handleClose,
+              },
+            ],
+            { cancelable: false }
+          );
+        }
       }
       // Xử lý thêm sau khi đăng ký thành công
     } catch (error) {
@@ -160,8 +166,6 @@ const RegisterCarModal = (props) => {
   }, [selectedCarType, selectedServiceType, carName, carName, driverId]);
 
   const onRefreshLoading = () => {};
-
-  console.log('Test modal: ', selectedCarType?.id ?? driverData?.carType);
 
   return (
     <Modal propagateSwipe animationIn="slideInUp" animationOut="slideOutDown" isVisible={modalVisible} onBackdropPress={handleClose} style={styles.containerModal}>
