@@ -4,6 +4,10 @@
   "private": true,
   "scripts": {
     "android": "react-native run-android",
+    "start-dv1": "react-native start --port 8081",
+    "android-dv1": "react-native run-android --deviceId 127.0.0.1:21503 --port 8081",
+    "start-dv2": "react-native start --port 8082",
+    "android-dv2": "react-native run-android --deviceId 127.0.0.1:21513 --port 8082",
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "start": "react-native start",

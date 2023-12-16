@@ -163,4 +163,21 @@ export const updateDriverInfo = async (driverId, driverData) => {
   }
 };
 
+//Hàm đăng xuất app
+export const logoutApp = async () => {
+  try {
+    const response = await apiService.post('/driver/logout');
+    return response.data;
+  } catch (error) {
+    let errorMessage = 'Đã xảy ra lỗi. Vui lòng thử lại';
+
+    // Kiểm tra xem có phản hồi từ server không và có thông báo lỗi không
+    if (error?.response?.data) {
+      errorMessage = error?.response?.data;
+    }
+
+    return Alert.alert('Thông báo', errorMessage);
+  }
+};
+
 export default apiService;

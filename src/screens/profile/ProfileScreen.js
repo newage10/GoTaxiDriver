@@ -1,6 +1,6 @@
-import { FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React from 'react';
-import { NavigationContext, useNavigation } from '@react-navigation/native';
+import { CommonActions, NavigationContext, useNavigation } from '@react-navigation/native';
 import Header from '~/components/Header';
 import Colors from '~/themes/colors';
 import { SCREEN_WIDTH, isEmptyObj, responsiveFontSizeOS, responsiveSizeOS } from '~/helper/GeneralMain';
@@ -9,10 +9,29 @@ import { useAppDispatch, useAppSelector } from '~/configs/hooks';
 import FastImage from 'react-native-fast-image';
 import images from '~/themes/images';
 import SCREENS from '~/constant/screens';
+import { logoutApp } from '~/services/apiService';
 
 const ProfileScreen = () => {
   const dispatch = useAppDispatch();
   const navigation = React.useContext(NavigationContext);
+
+  const handleLogout = async () => {
+    try {
+      const response = await logoutApp();
+      console.log('Test response: ', JSON.stringify(response));
+      if (response?.success) {
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: SCREENS.LOGIN }],
+          })
+        );
+      }
+    } catch (error) {
+      console.log('Test 2 error: ', error);
+      return Alert.alert('Thông báo', 'Đăng xuất thất bại. Vui lòng kiểm tra lại.');
+    }
+  };
 
   return (
     <LayoutView>
@@ -24,7 +43,7 @@ const ProfileScreen = () => {
             <FastImage source={images.iconNextTransparent} style={styles.imgNext} />
           </TouchableOpacity>
           <View style={styles.viewLine} />
-          <TouchableOpacity style={styles.viewItem}>
+          <TouchableOpacity style={styles.viewItem} onPress={handleLogout}>
             <Text style={styles.txtItem}>Đăng xuất</Text>
             <FastImage source={images.iconNextTransparent} style={styles.imgNext} />
           </TouchableOpacity>

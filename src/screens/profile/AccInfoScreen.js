@@ -8,7 +8,7 @@ import LayoutView from '~/components/LayoutView';
 import { useAppDispatch, useAppSelector } from '~/configs/hooks';
 import FastImage from 'react-native-fast-image';
 import images from '~/themes/images';
-import { getDriverCars, getDriverInfo, updateDriverInfo } from '~/services/apiService';
+import { getDriverInfo, updateDriverInfo } from '~/services/apiService';
 import { TextInputComponent } from '~/components/TextInputComponent';
 
 const AccInfoScreen = () => {
@@ -121,6 +121,8 @@ const AccInfoScreen = () => {
               returnKeyType={'done'}
               autoCorrect={false}
               allowFontScaling={false}
+              maxLength={10}
+              editable={false}
               keyboardType="number-pad"
               placeholder={'Nhập số điện thoại tài xế'}
               viewStyle={styles.viewInputText}
