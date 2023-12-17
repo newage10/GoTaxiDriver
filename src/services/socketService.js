@@ -73,7 +73,7 @@ const socketService = {
   //Tãi xế chấp nhận cuốc xe
   acceptRide(driverId) {
     const payload = {
-      driverId: driverId,
+      id: driverId,
     };
 
     // Nối tên sự kiện 'driver_accepted' với socket.id

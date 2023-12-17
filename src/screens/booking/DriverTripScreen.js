@@ -28,6 +28,7 @@ const DriverTripScreen = (props) => {
 
   //Hàm cập nhật vị trí chuyến đi
   const handleSendDriverLocation = (driverId, locationData) => () => {
+    console.log('Test 4 handleSendDriverLocation 5: ', driverId, JSON.stringify(locationData));
     socketService.sendDriverLocation(driverId, locationData);
   };
 
@@ -41,21 +42,21 @@ const DriverTripScreen = (props) => {
   useEffect(() => {
     // Cleanup function
     return () => {
-      socketService.stopListeningForRideRequest();
-      socketService.disconnect();
+      // socketService.stopListeningForRideRequest();
+      socketService.disconnectRide(driverId);
     };
   }, []);
 
   useEffect(() => {
     let interval;
 
-    const sendDriverLocation = () => {
-      const locationData = {
-        latitude: currentLocation.coordinates.lat,
-        longitude: currentLocation.coordinates.lng,
-      };
+    const sendDriverLocation = (locationData) => {
+      // const locationData = {
+      //   latitude: currentLocation.coordinates.lat,
+      //   longitude: currentLocation.coordinates.lng,
+      // };
 
-      handleSendDriverLocation(driverId, locationData);
+      handleSendDriverLocation(driverId, locationData)();
     };
 
     if (onPickupRoute) {
@@ -63,13 +64,21 @@ const DriverTripScreen = (props) => {
       if (currentDriverIndex === tripDriverLocations.length - 1) {
         // Đã đến điểm đón khách
         Alert.alert('Thông báo', 'Đã đến điểm đón khách hàng', [{ text: 'Xác nhận', onPress: handleDriverArrivedRide(bookingId) }]);
-        sendDriverLocation(); // Gửi vị trí cuối cùng khi đến nơi
+        console.log('Test 4 location send 1: ', JSON.stringify(tripDriverLocations[currentDriverIndex]));
+        sendDriverLocation({
+          latitude: tripDriverLocations[currentDriverIndex].coordinates.lat,
+          longitude: tripDriverLocations[currentDriverIndex].coordinates.lng,
+        }); // Gửi vị trí cuối cùng khi đến nơi
       } else {
         // Tiếp tục di chuyển đến điểm đón khách
         interval = setInterval(() => {
           let nextIndex = currentDriverIndex + 1;
           setCurrentDriverIndex(nextIndex);
-          sendDriverLocation(); // Gửi vị trí tài xế sau mỗi lần cập nhật
+          console.log('Test 4 location send 2: ', JSON.stringify(tripDriverLocations[nextIndex]));
+          sendDriverLocation({
+            latitude: tripDriverLocations[nextIndex].coordinates.lat,
+            longitude: tripDriverLocations[nextIndex].coordinates.lng,
+          }); // Gửi vị trí tài xế sau mỗi lần cập nhật
           if (mapView.current) {
             mapView.current.animateToRegion(
               {
@@ -88,13 +97,21 @@ const DriverTripScreen = (props) => {
       if (currentTripIndex === tripLocations.length - 1) {
         // Đã hoàn thành chuyến đi
         Alert.alert('Thông báo', 'Đã hoàn thành chuyến đi', [{ text: 'Xác nhận', onPress: handleCompleteRide }]);
-        sendDriverLocation(); // Gửi vị trí cuối cùng khi hoàn thành chuyến đi
+        console.log('Test 4 location send 3: ', JSON.stringify(tripLocations[currentTripIndex]));
+        sendDriverLocation({
+          latitude: tripLocations[currentDriverIndex].coordinates.lat,
+          longitude: tripLocations[currentDriverIndex].coordinates.lng,
+        }); // Gửi vị trí cuối cùng khi hoàn thành chuyến đi
       } else {
         // Tiếp tục chặn 2
         interval = setInterval(() => {
           let nextIndex = currentTripIndex + 1;
           setCurrentTripIndex(nextIndex);
-          sendDriverLocation(); // Gửi vị trí tài xế sau mỗi lần cập nhật
+          console.log('Test 4 location send 4: ', JSON.stringify(tripLocations[nextIndex]));
+          sendDriverLocation({
+            latitude: tripLocations[nextIndex].coordinates.lat,
+            longitude: tripLocations[nextIndex].coordinates.lng,
+          }); // Gửi vị trí tài xế sau mỗi lần cập nhật
           if (mapView.current) {
             mapView.current.animateToRegion(
               {
