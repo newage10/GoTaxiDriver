@@ -58,14 +58,6 @@ const ReceiveBookScreen = () => {
 
   const onRefreshLoading = () => {};
 
-  useEffect(() => {
-    // Cleanup function
-    // return () => {
-    //   socketService.stopListeningForRideRequest();
-    //   socketService.disconnect();
-    // };
-  }, []);
-
   const viewItem = (name, value, line = true, fWidthLeft = null, fWidthRight = null) => {
     return (
       <View>

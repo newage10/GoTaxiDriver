@@ -35,7 +35,7 @@ const DriverTripScreen = (props) => {
   const handleCompleteRide = () => {
     socketService.driverCompletedRide(bookingId, driverId);
     socketService.disconnectRide(driverId);
-    navigation.navigate(SCREENS.RECEIVE_BOOK_SCREEN);
+    navigation.navigate(SCREENS.HOME);
   };
 
   useEffect(() => {
