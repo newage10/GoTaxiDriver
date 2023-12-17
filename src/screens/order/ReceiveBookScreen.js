@@ -33,7 +33,7 @@ const ReceiveBookScreen = () => {
   const handleAcceptRide = (driverId) => () => {
     socketService.acceptRide(driverId);
     console.log('Cuốc xe đã được chấp nhận:', driverId);
-    navigation.navigate(SCREENS.DRIVER_TRIP_SCREEN, { bookingId: bookReceiveData?.bookingInfo?.id, socketId: bookReceiveData?.bookingInfo?.socketId });
+    navigation.navigate(SCREENS.DRIVER_TRIP_SCREEN, { bookingId: bookReceiveData?.bookingInfo?.id, socketId: bookReceiveData?.socketId });
   };
 
   const toggleAvailability = () => {
@@ -47,7 +47,7 @@ const ReceiveBookScreen = () => {
       socketService.listenForRideRequest((data) => {
         // Xử lý dữ liệu yêu cầu đi chuyến
         console.log('Thông tin chuyến đặt mới:', JSON.stringify(data));
-        setBookReceiveData(data ?? rideRequestData);
+        setBookReceiveData(data);
       });
     } else {
       console.log('Tài xế không sẵn sàng nhận chuyến');
