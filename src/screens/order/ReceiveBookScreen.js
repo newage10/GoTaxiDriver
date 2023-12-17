@@ -33,20 +33,20 @@ const ReceiveBookScreen = () => {
   const handleAcceptRide = (driverId) => () => {
     socketService.acceptRide(driverId);
     console.log('Cuốc xe đã được chấp nhận:', driverId);
-    navigation.navigate(SCREENS.DRIVER_TRIP_SCREEN, { bookingId: bookReceiveData?.bookingInfo?.id });
+    navigation.navigate(SCREENS.DRIVER_TRIP_SCREEN, { bookingId: bookReceiveData?.bookingInfo?.id, socketId: bookReceiveData?.bookingInfo?.socketId });
   };
 
   const toggleAvailability = () => {
     const newAvailability = !isAvailable;
     dispatch(setDriverAvailability(newAvailability)); // Cập nhật trạng thái trong Redux store
     if (newAvailability) {
-      console.log('Test 2 isAvailable: ', newAvailability);
+      console.log('Bắt đầu nhận chuyến: ', newAvailability);
       // Tài xế bây giờ sẵn sàng nhận chuyến, gửi vị trí hiện tại
       socketService.connect(); // Mở kết nối Socket.IO
       socketService.updateLocation(driverId, currentPosition);
       socketService.listenForRideRequest((data) => {
         // Xử lý dữ liệu yêu cầu đi chuyến
-        console.log('Ride request received:', data);
+        console.log('Thông tin chuyến đặt mới:', JSON.stringify(data));
         setBookReceiveData(data ?? rideRequestData);
       });
     } else {

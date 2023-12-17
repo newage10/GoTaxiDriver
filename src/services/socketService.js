@@ -84,7 +84,7 @@ const socketService = {
   },
 
   //Tài xế từ chối cuốc xe
-  rejectRide(driverId) {
+  rejectRide(driverId, socketId) {
     const payload = {
       driverId: driverId,
     };
@@ -97,12 +97,12 @@ const socketService = {
   },
 
   //Tãi xế gửi thông báo đã đến điểm đón
-  driverArrivedRide(bookingId) {
+  driverArrivedRide(bookingId, socketId) {
     const payload = {
       id: bookingId,
-      socketId: socket.id,
+      socketId: socketId,
     };
-
+    console.log('Socket gửi thông báo đến điểm đón: ', JSON.stringify(payload));
     // Nối tên sự kiện 'driver_arrived' với socket.id
     const eventName = 'driver_arrived' + ':' + socket.id;
 
@@ -126,13 +126,13 @@ const socketService = {
   },
 
   //Tãi xế gửi thông báo đã hoàn thành chuyến đi
-  driverCompletedRide(bookingId, driverId) {
+  driverCompletedRide(bookingId, driverId, socketId) {
     const payload = {
       id: bookingId,
       driverId: driverId,
-      socketId: socket.id,
+      socketId: socketId,
     };
-
+    console.log('Socket hoàn thành chuyến: ', JSON.stringify(payload));
     // Nối tên sự kiện 'driver_completed' với socket.id
     const eventName = 'driver_completed' + ':' + socket.id;
 
